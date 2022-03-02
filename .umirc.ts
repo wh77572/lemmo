@@ -10,6 +10,6 @@ export default defineConfig({
     port: 3003
   },
   exportStatic: {
-    dynamicRoot: '/'
+    dynamicRoot: true
   }
 });
