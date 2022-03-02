@@ -9,5 +9,20 @@ export default defineConfig({
   devServer: {
     port: 3003
   },
-  exportStatic: {}
+  exportStatic: {},
+  dynamicImportSyntax: {},
+  history: {
+    type: 'hash'
+  },
+  base: '/module/',
+  publicPath: '/module/',
+  extraBabelPlugins: [
+    ['babel-plugin-import', {
+
+      libraryName: 'antd',
+      libraryDirectory: 'es',
+      style: true,
+    }],
+  ],
+  mfsu: {},
 });
