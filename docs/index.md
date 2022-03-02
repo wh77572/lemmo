@@ -1,4 +1,5 @@
+---
+gapless: true
+---
 
-## Hello lemmo!
-
-hey, there，thank  u   for   coming！
+<code src="path/to/Home/index.jsx" inline />
