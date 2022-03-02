@@ -9,7 +9,5 @@ export default defineConfig({
   devServer: {
     port: 3003
   },
-  exportStatic: {
-    dynamicRoot: true
-  }
+  exportStatic: {}
 });
