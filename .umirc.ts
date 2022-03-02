@@ -14,8 +14,8 @@ export default defineConfig({
   history: {
     type: 'hash'
   },
-  base: '/lemmo/',
-  publicPath: '/lemmo/',
+  base: '/wh77572/lemmo/',
+  publicPath: '/wh77572/lemmo/',
   extraBabelPlugins: [
     ['babel-plugin-import', {
 
