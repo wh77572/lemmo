@@ -11,9 +11,6 @@ export default defineConfig({
   },
   exportStatic: {},
   dynamicImportSyntax: {},
-  history: {
-    type: 'hash'
-  },
   base: '/lemmo/',
   publicPath: '/lemmo/',
   extraBabelPlugins: [
