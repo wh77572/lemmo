@@ -11,8 +11,6 @@ export default defineConfig({
   },
   exportStatic: {},
   dynamicImportSyntax: {},
-  base: '/lemmo',
-  publicPath: '/lemmo/',
   extraBabelPlugins: [
     ['babel-plugin-import', {
 
