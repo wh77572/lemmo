@@ -53,7 +53,7 @@ const rowSelection = {
   }),
 };
 
-const Demo = () => {
+const Home = () => {
   const [selectionType, setSelectionType] = useState<any>('checkbox');
   return (
     <div>
@@ -81,4 +81,4 @@ const Demo = () => {
   );
 };
 
-export default Demo;
+export default Home;

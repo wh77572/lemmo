@@ -1,10 +1,15 @@
-## Home
+---
+nav:
+  title: Component
+  order: 2
+---
 
-这里是放置组件demo用的，比如这个table：
+## Component
+这里也可以放置组件，比如这个table：
 
-```jsx
+```tsx
 import React from 'react';
-import {Home} from 'lemmo'
+import { Home } from 'lemmo';
 
 export default () => <Home />;
 ```
