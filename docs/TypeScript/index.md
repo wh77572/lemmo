@@ -45,14 +45,37 @@ TypeScript 是 JavaScript 的超集，扩展了 JavaScript 的语法，因此现
 TypeScript 可处理已有的 JavaScript 代码，并只对其中的 TypeScript 代码进行编译。
 
 <div style="display: flex">
-  <img src="/ts-lemmo-1.png" width="160" style="margin-right: 40px">
-  <img src="/ts-lemmo-2.png" width="160">
+  <img src="/ts-lemmo-1.png" width="130" style="margin-right: 30px">
+  <img src="/ts-lemmo-2.png" width="130">
 </div>  
 
 ---
 
 ## Ts语法
+> TypeScript是一种由微软开发的自由和开源的编程语言。它是JavaScript的一个超集，而且本质上向这个语言添加了可选的静态类型和基于类的面向对象编程。 TypeScript扩展了JavaScript的句法，所以任何现有的JavaScript程序可以不加改变的在TypeScript下工作。TypeScript是为大型应用之开发而设计，而编译时它产生 JavaScript 以确保兼容性。 TypeScript 支持为已存在的 JavaScript 库添加类型信息的头文件，扩展了它对于流行的库如 jQuery，MongoDB，Node.js 和 D3.js 的支持。
+
+### 语言特性
 > TypeScript 是一种给 JavaScript 添加特性的语言扩展。增加的功能包括：
+
+- 类型批注和编译时类型检查
+- 类型推断
+- 类型擦除
+- 接口
+- 枚举
+- Mixin
+- 泛型编程
+- 名字空间
+- 元组
+- Await
+
+以下功能是从 ECMA 2015 反向移植而来：
+
+- 类
+- 模块
+- lambda 函数的箭头语法
+- 可选参数以及默认参数
+
+
 
 - 类 Classes
 - 接口 Interfaces
@@ -522,7 +545,23 @@ new value5(); // error
 在实际使用中，如果有类型无法确定的情况，要尽量避免使用 any，因为 any 会丢失类型信息，一旦一个类型被指定为 any，那么在它上面进行任何操作都是合法的，所以会有意想不到的情况发生。因此如果遇到无法确定类型的情况，要先考虑使用 unknown。
 
 ### 高级类型
-```
-这个就不一一列举了，欢迎补充，pr~pr~pr~
-```
+> 当应用越来越复杂，我们很容易把一些变量设置为 any 类型，TypeScript 写着写着也就成了 AnyScript。为了让大家能更加深入的了解 TypeScript 的类型系统，本文将重点介绍其高级类型，帮助大家摆脱 AnyScript
 
+    了解什么是泛型
+    
+    
+#### 交叉类型（&）
+
+#### 联合类型（|）
+
+#### 别名类型（type）
+
+#### 索引类型（keyof）
+
+#### 约束类型（extends）
+
+#### 映射类型（in）
+
+#### 条件类型（U ? X : Y）
+
+#### 映射类型（in）
