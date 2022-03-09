@@ -9,6 +9,11 @@ export default defineConfig({
   devServer: {
     port: 3003
   },
+  mode: 'site',
+  navs: [
+    null,
+    { title: 'GitHub', path: 'https://github.com/wh77572/lemmo' },
+  ],
   exportStatic: {},
   dynamicImportSyntax: {},
   extraBabelPlugins: [
