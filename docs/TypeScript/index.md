@@ -1,5 +1,7 @@
 ---
-order: 1
+nav:
+  title: TypeScript
+  order: 4
 ---
 
 ## 什么是TypeScript

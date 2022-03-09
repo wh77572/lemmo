@@ -1,10 +1,10 @@
 ---
 nav:
   title: Component
-  order: 2
+  order: 10
 ---
 
-## Component
+## Table
 这里也可以放置组件，比如这个table：
 
 ```tsx
