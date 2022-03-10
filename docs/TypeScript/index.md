@@ -2,6 +2,8 @@
 nav:
   title: TypeScript
   order: 4
+  
+order: 1
 ---
 
 ## 什么是TypeScript
@@ -549,21 +551,223 @@ new value5(); // error
 ### 高级类型
 > 当应用越来越复杂，我们很容易把一些变量设置为 any 类型，TypeScript 写着写着也就成了 AnyScript。为了让大家能更加深入的了解 TypeScript 的类型系统，本文将重点介绍其高级类型，帮助大家摆脱 AnyScript
 
-    了解什么是泛型
-    
-    
+**在讲解高级类型之前，我们需要先简单理解泛型是什么。**
+#### 泛型
+泛型是强类型语言中比较重要的一个概念，合理的使用泛型可以提升代码的可复用性，让系统更加灵活。下面是维基百科对泛型的描述：
+
+> 泛型允许程序员在强类型程序设计语言中编写代码时使用一些以后才指定的类型，在实例化时作为参数指明这些类型。
+
+泛型通过一对尖括号来表示(<>)，尖括号内的字符被称为类型变量，这个变量用来表示类型。
+```
+function copy<T>(arg: T): T {
+  if (typeof arg === 'object') {
+    return JSON.parse(
+      JSON.stringify(arg)
+    )
+  } else {
+    return arg
+  }
+}
+```
+这个类型 T，在没有调用 copy 函数的时候并不确定，只有调用 copy 的时候，我们才知道 T 具体代表什么类型。
+```
+const str = copy<string>('my name is typescript')
+```
+
+我们在调用 copy 的时候也可以省略尖括号，通过 TS 的类型推导是可以确定 T 为 string 的。
+```
+const str = copy('my name is typescript')
+```
+   
 #### 交叉类型（&）
+交叉类型说简单点就是将多个类型合并成一个类型，个人感觉叫做「合并类型」更合理一点，其语法规则和逻辑 “与” 的符号一致。
+```
+T & U
+```
+假如，我现在有两个类，一个按钮，一个超链接，现在我需要一个带有超链接的按钮，就可以使用交叉类型来实现。
+```
+interface Button {
+     type: string
+     text: string
+   }
+   
+interface Link {
+ alt: string
+ href: string
+}
+   
+const linkBtn: Button & Link = {
+ type: 'danger',
+ text: '跳转到百度',
+ alt: '跳转到百度',
+ href: 'http://www.baidu.com'
+}
+```
 
 #### 联合类型（|）
+联合类型的语法规则和逻辑 “或” 的符号一致，表示其类型为连接的多个类型中的任意一个。
+```
+T | U
+```
+例如，之前的 Button 组件，我们的 type 属性只能指定固定的几种字符串。
+
+```
+interface Button {
+  type: 'default' | 'primary' | 'danger'
+  text: string
+}
+
+const btn: Button = {
+  type: 'primary',
+  text: '按钮'
+}
+```
 
 #### 别名类型（type）
+前面提到的交叉类型与联合类型如果有多个地方需要使用，就需要通过类型别名的方式，给这两种类型声明一个别名。类型别名与声明变量的语法类似，只需要把 const、let 换成 type 关键字即可。
+```
+type Alias = T | U
+```
+
+```
+type InnerType = 'default' | 'primary' | 'danger'
+
+interface Button {
+  type: InnerType
+  text: string
+}
+
+interface Alert {
+  type: ButtonType
+  text: string
+}
+```
 
 #### 索引类型（keyof）
+keyof 类似于 Object.keys ，用于获取一个接口中 Key 的联合类型。
+
+```
+interface Button {
+    type: string
+    text: string
+}
+
+type ButtonKeys = keyof Button
+// 等效于
+type ButtonKeys = "type" | "text"
+```
+还是拿之前的 Button 类来举例，Button 的 type 类型来自于另一个类 ButtonTypes，按照之前的写法，每次 ButtonTypes 更新都需要修改 Button 类，如果我们使用 keyof 就不会有这个烦恼。
+
+```
+interface ButtonStyle {
+    color: string
+    background: string
+}
+interface ButtonTypes {
+    default: ButtonStyle
+    primary: ButtonStyle
+    danger: ButtonStyle
+}
+interface Button {
+    type: 'default' | 'primary' | 'danger'
+    text: string
+}
+
+// 使用 keyof 后，ButtonTypes修改后，type 类型会自动修改 
+interface Button {
+    type: keyof ButtonTypes
+    text: string
+}
+```
 
 #### 约束类型（extends）
+这里的 extends 关键词不同于在 class 后使用 extends 的继承作用，泛型内使用的主要作用是对泛型加以约束。我们用我们前面写过的 copy 方法再举个例子：
+
+```
+type BaseType = string | number | boolean
+
+// 这里表示 copy 的参数
+// 只能是字符串、数字、布尔这几种基础类型
+function copy<T extends BaseType>(arg: T): T {
+  return arg
+}
+```
+extends 经常与 keyof 一起使用，例如我们有一个方法专门用来获取对象的值，但是这个对象并不确定，我们就可以使用 extends 和 keyof 进行约束。
+```
+function getValue<T, K extends keyof T>(obj: T, key: K) {
+  return obj[key]
+}
+
+const obj = { a: 1 }
+const a = getValue(obj, 'a')
+```
 
 #### 映射类型（in）
+in 关键词的作用主要是做类型的映射，遍历已有接口的 key 或者是遍历联合类型。下面使用内置的泛型接口 Readonly 来举例。
+```
+type Readonly<T> = {
+    readonly [P in keyof T]: T[P];
+};
+
+interface Obj {
+  a: string
+  b: string
+}
+
+type ReadOnlyObj = Readonly<Obj>
+```
+我们可以结构下这个逻辑，首先 keyof Obj 得到一个联合类型 'a' | 'b'。
+```
+interface Obj {
+    a: string
+    b: string
+}
+
+type ObjKeys = 'a' | 'b'
+
+type ReadOnlyObj = {
+    readonly [P in ObjKeys]: Obj[P];
+}
+```
+最后就可以得到一个新的接口。
+```
+interface ReadOnlyObj {
+    readonly a: string;
+    readonly b: string;
+}
+```
 
 #### 条件类型（U ? X : Y）
+条件类型的语法规则和三元表达式一致，经常用于一些类型不确定的情况。
+```
+T extends U ? X : Y
+```
+上面的意思就是，如果 T 是 U 的子集，就是类型 X，否则为类型 Y。下面使用内置的泛型接口 Extract 来举例。
 
-#### 映射类型（in）
+```
+type Extract<T, U> = T extends U ? T : never;
+```
+如果 T 中的类型在 U 存在，则返回，否则抛弃。假设我们两个类，有三个公共的属性，可以通过 Extract 提取这三个公共属性。
+```
+interface Worker {
+  name: string
+  age: number
+  email: string
+  salary: number
+}
+
+interface Student {
+  name: string
+  age: number
+  email: string
+  grade: number
+}
+
+
+type CommonKeys = Extract<keyof Worker, keyof Student>
+// 'name' | 'age' | 'email'
+```
+
+
+### 总结
+一个Ts的项目，肯定是少不了AnyScript这个类型，但我们可以通过TypeScript的更多高级类型来不断减少any的使用，最后希望对大家都有所帮助。

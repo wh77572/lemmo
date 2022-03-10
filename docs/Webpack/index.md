@@ -1,7 +1,7 @@
 ---
 nav:
   title: Webpack
-  order: 6
+  order: 8
 ---
 
 ## Webpack

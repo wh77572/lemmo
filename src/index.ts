@@ -1,2 +1,2 @@
 // 应用组件
-export { default as Home } from './Home';
+export { default as TableCell } from './TableCell';

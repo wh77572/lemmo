@@ -9,7 +9,7 @@ nav:
 
 ```tsx
 import React from 'react';
-import { Home } from 'lemmo';
+import { TableCell } from 'lemmo';
 
-export default () => <Home />;
+export default () => <TableCell />;
 ```

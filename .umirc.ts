@@ -12,7 +12,7 @@ export default defineConfig({
   mode: 'site',
   navs: [
     null,
-    { title: 'GitHub', path: 'https://github.com/wh77572/lemmo' },
+    // { title: 'GitHub', path: 'https://github.com/wh77572/lemmo' },
   ],
   exportStatic: {},
   dynamicImportSyntax: {},

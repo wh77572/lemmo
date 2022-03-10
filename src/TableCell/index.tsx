@@ -53,7 +53,7 @@ const rowSelection = {
   }),
 };
 
-const Home = () => {
+const TableCell = () => {
   const [selectionType, setSelectionType] = useState<any>('checkbox');
   return (
     <div>
@@ -81,4 +81,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default TableCell;
