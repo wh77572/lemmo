@@ -11,12 +11,7 @@ order: 1
 ```
 npm install -g typescript
 > or
-yarn add typescript
-```
-
-附：使用国内镜像：
-```
-npm config set registry https://registry.npmmirror.com
+yarn global add typescript
 ```
 
 安装完成后我们可以使用 tsc 命令来执行 TypeScript 的相关代码，以下是查看版本号：
@@ -29,6 +24,46 @@ $ tsc -v
 ```
 tsc --init
 ```
+
+---
+
+> 附：几种换源方式
+
+- 修改成腾讯云镜像源:
+```
+npm config set registry http://mirrors.cloud.tencent.com/npm/
+```
+
+- 修改成淘宝镜像源:
+```
+npm config set registry https://registry.npmmirror.com
+```
+
+- 修改成华为云镜像源
+```
+npm config set registry https://mirrors.huaweicloud.com/repository/npm/
+```
+
+- 使用淘宝定制的cnpm安装
+```
+npm install -g cnpm --registry=https://registry.npmmirror.com
+> then
+cnpm install xxx
+```
+> check  验证命令  镜像是否配置成功
+
+```
+npm config get registry
+```
+
+- [临时]通过 npm 命令指定下载源
+```
+npm install 软件xxx --registry https://registry.npmmirror.com
+```
+
+- **http://npm.taobao.org 和 http://registry.npm.taobao.org 域名将于 2022 年 05 月 31 日零时起停止服务。**
+
+---
 
 ## Hello Ts
 遵循程序猿新学语言规范，先从```Hello  World```开始：
@@ -117,6 +152,9 @@ TypeScript 编译的时候即使报错了，还是会生成编译结果,我们�
   }
 }
 ```
+
+## 怎么在老项目里面使用ts
+下次再讲
 
 
 
