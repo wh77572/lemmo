@@ -25,6 +25,11 @@ npm config set registry https://registry.npmmirror.com
 $ tsc -v
 ```
 
+**使用以下命令初始化一个 tsconfig.json 文件**
+```
+tsc --init
+```
+
 ## Hello Ts
 遵循程序猿新学语言规范，先从```Hello  World```开始：
 
@@ -56,6 +61,62 @@ console.log(sayHello(user));
 TypeScript 编译的时候即使报错了，还是会生成编译结果,我们仍然可以使用这个编译之后的文件。
 
 > 如果要在报错的时候终止 js 文件的生成，可以在 tsconfig.json 中配置 noEmitOnError
+
+
+附：常用配置项
+```
+{
+  "compilerOptions": {
+    // 指定输出的 JS 代码所使用的 ECMAScript 版本，可选值为：ES3、ES5、ES2015、ES2016、ES2017、ES2018 和 ESNEXT。请根据具体的兼容性要求选择。
+    "target": "es5",
+    // 指定输出的 JS 代码所使用的模块化方案，可选值为：none、commonjs、amd、system、umd、es2015 或 ESNext。
+    "module": "commonjs",
+    // 指定编译过程中要使用的库，视具体情况而定。
+    "lib": [],
+    // 是否编译 JS 文件。
+    "allowJs": true,
+    // 是否报告 JS 源码中的错误。
+    "checkJs": true,
+    // 启用 JSX 语法，可选值为 perserve、react-native、react。
+    "jsx": "preserve",
+    // 是否生成相关的 '.d.ts' 声明文件。
+    "declaration": true,
+    // 是否生成 sourceMap 文件
+    "sourceMap": true,
+    // 将输出的 JS 代码整合为单个文件
+    // "outFile": "./",
+    // 指定输出目录
+    "outDir": "./",
+    // 指定源码根目录
+    "rootDir": "./",
+    // 是否引入 tslib
+    "importHelpers": true,
+    // 当目标版本为 'ES5' 或 'ES3'，用以提供完整的解构、'for-of iterable' 支持
+    "downlevelIteration": true,
+
+    // 启用所有严格类型检查，区别于 JS 的 strict mode。
+    "strict": true,
+    // 使用 any 类型时必须明确声明
+    // "noImplicitAny": true,
+    // 严格检查 null 类型
+    // "strictNullChecks": true,
+    // 严格检查函数类型
+    // "strictFunctionTypes": true,
+    // 严格检查 bind、call、apply 类型
+    // "strictBindCallApply": true,
+    // 严格检查类属性初始化
+    // "strictPropertyInitialization": true,
+    // 当 this 具有隐含 any 类型时报错
+    // "noImplicitThis": true,
+    // 始终使用严格模式（指 JS 中的严格模式）
+    // "alwaysStrict": true,
+
+    /* 实验性选项 */
+    // 对 ES7 中的修饰器 decorator 提供实验性支持
+    "experimentalDecorators": true,
+  }
+}
+```
 
 
 
