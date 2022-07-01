@@ -61,6 +61,11 @@ npm config get registry
 npm install 软件xxx --registry https://registry.npmmirror.com
 ```
 
+- 再换回来
+```
+npm config set registry https://registry.npmjs.org/
+```
+
 - **http://npm.taobao.org 和 http://registry.npm.taobao.org 域名将于 2022 年 05 月 31 日零时起停止服务。**
 
 ---
