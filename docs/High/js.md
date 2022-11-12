@@ -428,10 +428,95 @@ V8 引擎将保存对象的 堆 (heap) 进行了分代:
 [参考文档](https://juejin.cn/post/6844903858972409869)
 
 ## new,call,apply,bind方法的实现原理
+javascript中new,call,apply,bind等方法是我们经常要使用到，在伪数组转数组、函数传参、继承等场景中，都离不开他们。
 ### new
+我们用new实例化一个构造函数，生成一个实例对象，而new到底做了什么呢，主要分为以下五步：
+
+2. 创建一个新对象；
+3. 将构造函数的作用域赋给这个新对象(相当于将this 指向新对象);
+4. 执行构造函数中的代码(为这个新对象添加属性和方法);
+5. 返回这个新对象;
+
+思路: <br>
+- 那我们就可以用代码来实现了，其实只需要完成这几个功能。
+    1. 让实例可以访问到私有属性；
+    1. 让实例可以访问构造函数原型所在的原型链上的属性；
+    1. 构造函数返回的最后结果是引用数据类型;
+
+```
+    function MyNew() {
+      let Constructor = Array.prototype.shift.call(arguments); // 1：取出构造函数
+
+      let obj = {} // 2：执行会创建一个新对象
+
+      obj.__proto__ = Constructor.prototype // 3：该对象的原型等于构造函数prototype
+
+      var result = Constructor.apply(obj, arguments) // 4： 执行函数中的代码
+
+      return typeof result === 'object' ? result : obj // 5： 返回的值必须为对象
+    }
+```
+### call，apply，bind调用
+```
+func.call(thisArg, param1, param2, ...)
+func.apply(thisArg, [param1,param2, ...])
+func.bind(thisArg, param1,param2, ...)
+```
+其中func 是要调用的函数，thisArg 一般是this所指的对象，后面的为参数。
+
+这三者的公共点就是，都是改变函数func的this指向。其中 call和apply 的区别在于传参的写法不同：
+
+call 是一个一个参数传，而apply是以数组的形式传入。
+
+然后bind 与这两者的区别在于：bind函数不会马上执行，而（call 与 apply）是在改变了函数的this指向后立马执行。
+
 ### call
+call方法的实现主要有以下三步，比如 fn.call(obj, a, b) ：
+
+1. 把调用函数fn的上下文指向obj
+2. 形参a,b等是以逗号分隔传进去
+3. 执行函数fn，并返回结果
+```
+    Function.prototype.call = function (context, ...args) {
+      var context = context || window;
+      context.fn = this;
+      var res = eval('context.fn(...args)');
+      delete context.fn
+      return res;
+    }
+```
 ### apply
+apply方法和call方法大同小异，唯一差别就是，apply传入的参数是数组格式。
+```
+    // apply 原理
+    Function.prototype.apply = function (context, args) {
+      let context = context || window;
+      context.fn = this;
+      let res = eval('context.fn(...args)');
+      delete context.fn
+      return res;
+    }
+```
 ### bind
+bind方法和call、apply方法的差别是，他们都改变了上下文，但是bind没有立即执行函数。
+```
+   Function.prototype.myBind = function (context) {
+     if (typeof this !== 'function') {
+       throw TypeError('error');
+     }
+     // 缓存this
+     const self = this;
+     const args = [...arguments].slice(1);
+     //返回一个函数
+     return function fn() {
+       // 判断调用方式
+       if (this instanceof fn) {
+         return new self(...args, ...arguments);
+       }
+       return self.apply(context, args.concat(...arguments));
+     };
+   };
+```
 
 ## 深拷贝和浅拷贝
 深拷贝和浅拷贝是只针对Object和Array这样的引用数据类型的。
@@ -575,6 +660,17 @@ Object.prototype.__proto__ === null
 当我们访问一个对象的属性时，如果这个对象内部不存在这个属性，那么它就会去它的原型对象里找这个属性，这个原型对象又会有自己的原型，于是就这样一直找下去，也就是原型链的概念
 
 ## js继承
+对于使用过基于类的语言 (如 Java 或 C++) 的开发者们来说，JavaScript 实在是有些令人困惑 —— JavaScript 是动态的，本身不提供一个 class 的实现。即便是在 ES2015/ES6 中引入了 class 关键字，但那也只是语法糖，JavaScript 仍然是基于原型的。
+
+当谈到继承时，JavaScript 只有一种结构：对象。每个实例对象（object）都有一个私有属性（称之为 __proto__）指向它的构造函数的原型对象（prototype）。该原型对象也有一个自己的原型对象（__proto__），层层向上直到一个对象的原型对象为 null。根据定义，null 没有原型，并作为这个原型链中的最后一个环节。
+
+### 原型链继承
+### 原型式继承
+### 借用构造函数继承
+### 原型链+借用构造函数的组合继承
+### 寄生式继承
+### 寄生组合式继承
+### ES6中class的继承
 
 ## EventLoop
 每个宏任务之后，引擎会立即执行微任务队列中的所有任务，然后再执行其他的宏任务，或渲染，或进行其他任何操作。
@@ -728,29 +824,52 @@ If-None-Match的header会将上次返回的Etag发送给服务器，询问该资
 [参考资料](https://github.com/amandakelake/blog/issues/41)
 
 ## 事件捕获与冒泡的区别
+事件冒泡和事件捕获好像存在一个就足够了，为什么会有这两套概念？答：因为事件冒泡是微软公司提出来了。而事件捕获是网景公司提出来了，删掉那个都不好，干脆就两个都留下来了。
+### 事件流
+dom的事件处理流程分为三个阶段，事件捕获，目标事件，事件冒泡。
+
+先进行事件捕获 => 再到目标本身 => 最后再进行事件冒泡
+
+### 事件冒泡
+事件会从最内层的元素开始发生，逐级传播给祖先元素，直到document为止，有的浏览器可能到window。
+
+p -> div -> body -> html -> document
+
+### 事件捕获
+与事件冒泡相反，事件会从最外层开始发生，直到最具体的元素。
+
+document -> html -> body -> div -> p
+
+### 怎么控制事件在冒泡阶段执行还是在捕获阶段执行。
+addEventListener函数用于事件绑定，他有三个参数↓
+
+- eventType 事件类型（"click之类的"）
+- function 触发事件后所需要执行的函数
+- bool   入参true/false,决定事件在冒泡阶段执行还是捕获阶段执行。true表示事件在捕获阶段执行，false表示事件在冒泡阶段执行。默认值是false。
+
+### 事件委托
+事件委托，也叫事件代理，主要是利用事件冒泡原理，从目标节点开始，逐渐向上传播事件，最终将事件委托给它的父级节点。
+
+根据上面的描述，我们知道事件委托可以使代码逻辑更加简洁高效，并且减少操作dom的次数，把类似元素的事件绑定委托给其父元素进行统一的监听处理，方便动态的添加和修改元素。
+
+### event.stopPropagation和event.preventDefault区别
+event.preventDefault() 它停止浏览器的默认行为。
+
+event.stopPropagation() 它防止事件传播（或“冒泡”）DOM。
+
+**何时使用它们？**
+
+防止默认浏览器的行为，使用preventDefault
+
+阻止事件冒泡，stopPropagation
 
 ### e.target和e.currentTarget之间的区别
+e.target 是事件触发的真实元素
+
+e.currentTarget 指向绑定监听事件的元素
 
 ## promise内部实现方式
  
-
-## http 2.0
-
-## http的属性以及https的区别
-
-## 前端安全
-
-## hybrid怎么跟APP通信
-
-## js的设计模式
-
-## CSR 和 SSR 的区别
-
-## 前端性能优化
-
-### 基于防抖和节流的性能优化
-
-## 柯里化
 
 
 
