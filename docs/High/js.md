@@ -869,7 +869,31 @@ e.target 是事件触发的真实元素
 e.currentTarget 指向绑定监听事件的元素
 
 ## promise内部实现方式
- 
+### Promise 是什么
+Promise是一个对象，从它可以获取一步操作的消息。Promise对象的状态不受外部影响。
+
+### Promise 状态
+Promise 必须为以下三种状态之一：等待态（Pending）、执行态（Fulfilled）和拒绝态（Rejected）。一旦Promise被resolve或reject，不能再迁移至其他任何状态（即状态 immutable）。
+
+### 静态方法
+- Promise.all(iterable)
+这个方法返回一个新的 promise 对象，等到所有的 promise 对象都成功或有任意一个 promise 失败。
+  
+如果所有的 promise 都成功了，它会把一个包含 iterable 里所有 promise 返回值的数组作为成功回调的返回值。顺序跟 iterable 的顺序保持一致。
+  
+一旦有任意一个 iterable 里面的 promise 对象失败则立即以该 promise 对象失败的理由来拒绝这个新的 promise。
+
+- Promise.allSettled(iterable)
+等到所有 promise 都已敲定（每个 promise 都已兑现或已拒绝）。
+
+返回一个 promise，该 promise 在所有 promise 都敲定后完成，并兑现一个对象数组，其中的对象对应每个 promise 的结果。
+
+- Promise.any(iterable)
+该方法用于获取首个兑现的 promise 的值。只要有一个 promise 兑现了，那么此方法就会提前结束，而不会继续等待其他的 promise 全部敲定。
+
+- Promise.race(iterable)
+一个待定的 Promise 只要给定的迭代中的一个 promise 解决或拒绝，就采用第一个 promise 的值作为它的值。
+[参考资料](https://segmentfault.com/a/1190000040022944)
 
 
 
