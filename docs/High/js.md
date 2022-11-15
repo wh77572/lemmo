@@ -659,6 +659,22 @@ Object.prototype.__proto__ === null
 ### 原型链
 当我们访问一个对象的属性时，如果这个对象内部不存在这个属性，那么它就会去它的原型对象里找这个属性，这个原型对象又会有自己的原型，于是就这样一直找下去，也就是原型链的概念
 
+### hasOwnProperty
+hasOwnProperty是"Object.prototype"的一个方法，该方法能判断一个对象是否包含自定义属性而不是原型链上的属性，因为"hasOwnProperty" 是 JavaScript 中唯一一个处理属性但是不查找原型链的函数。
+
+### Object.keys() 和 Object.getOwnPropertyNames() 的区别
+**可枚举性（enumerable）用来控制所描述的属性**
+
+Object.keys() 方法会返回一个由一个给定对象的自身可枚举属性组成的数组，数组中属性名的排列顺序和正常循环遍历该对象时返回的顺序一致 。
+
+Object.getOwnPropertyNames()方法返回一个由指定对象的所有自身属性的属性名（包括不可枚举属性但不包括Symbol值作为名称的属性）组成的数组。
+
+共同点：都是返回自身的属性，不会返回原型链上的。
+
+区别： Object.keys()返回可枚举的，Object.getOwnPropertyNames()返回所有的。
+
+[什么是可枚举属性](jianshu.com/p/81deaf352f5c)
+
 ## js继承
 对于使用过基于类的语言 (如 Java 或 C++) 的开发者们来说，JavaScript 实在是有些令人困惑 —— JavaScript 是动态的，本身不提供一个 class 的实现。即便是在 ES2015/ES6 中引入了 class 关键字，但那也只是语法糖，JavaScript 仍然是基于原型的。
 
@@ -863,6 +879,9 @@ event.stopPropagation() 它防止事件传播（或“冒泡”）DOM。
 
 阻止事件冒泡，stopPropagation
 
+### stopPropagation包括捕获吗
+stopPropagation 的功能是阻止事件传播，包括阻止捕获或冒泡，之前错误的认为只是阻止事件冒泡的。
+
 ### e.target和e.currentTarget之间的区别
 e.target 是事件触发的真实元素
 
@@ -898,5 +917,38 @@ Promise 必须为以下三种状态之一：等待态（Pending）、执行态�
 ### promise如何取消
 通过reject拒绝
 
+## await内部的原理？
+
+## JavaScript中substring()、substr()、slice()的区别
+- substring(start,end)返回指定下标间的字符，下标必须为正整数
+- substr(start,length)返回从指定下标开始的长度为length的字符，可以为负数
+- slice(start,end)返回指定下标间的字符，可以为负数
+
+注意点：
+- 不写结束下标默认到末尾
+- 如果start=end则返回空字符串
+- 如果任一参数小于0，则被当做0
+- 如果任一参数大于字符串的长度，则被当做字符串的长度
+```
+var stringValue = "hello world";
+
+console.log(stringValue.slice(3));          //”lo world”
+console.log(stringValue.substring(3));      //”lo world”
+console.log(stringValue.substr(3));        //”lo world”
+
+console.log(stringValue.slice(3,7));         //”lo w”
+console.log(stringValue.substring(3,7));    //”lo w”
+console.log(stringValue.substr(3,7));       //”lo worl”
+
+console.log(stringValue.slice(-3));         //"rld"　从后往前数3个开始
+console.log(stringValue.substring(-3));     //"hello world" 为负，默认从0开始
+console.log(stringValue.substr(-3));        //"rld"
+
+console.log(stringValue.slice(3,-4));       //”lo w”　下标从3开始到-4(从后往前数4个)
+console.log(stringValue.substring(3,-4));   //”hel”　
+console.log(stringValue.substr(3,-4));      //””　长度为负，默认不显示
+```
+
+## 为什么 setTimeout 可以解决栈溢出问题
 
 
