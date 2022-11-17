@@ -87,6 +87,7 @@ console.log(Boolean(-0)) // false
 console.log(Boolean(NaN)) // false
 console.log(Boolean("")) // false
 ```
+
 ### 原始值转数字
 我们可以使用 Number 函数将类型转换成数字类型，如果参数无法被转换为数字，则返回 NaN。
 ```
@@ -125,6 +126,7 @@ console.log(parseInt("0xFF")) // 255
 console.log(parseFloat(".1")) // 0.1
 console.log(parseInt("0.1")) // 0
 ```
+
 ### 原始值转字符
 我们使用 String 函数将类型转换成字符串类型
 ```
@@ -143,6 +145,7 @@ console.log(String(Infinity)) // Infinity
 console.log(String(-Infinity)) // -Infinity
 console.log(String(1)) // 1
 ```
+
 ### 原始值转对象
 原始值到对象的转换非常简单，原始值通过调用 String()、Number() 或者 Boolean() 构造函数，转换为它们各自的包装对象。
 
@@ -153,12 +156,14 @@ console.log(typeof a); // number
 var b = new Number(a);
 console.log(typeof b); // object
 ```
+
 ### 对象转布尔值
 对象到布尔值的转换非常简单：所有对象(包括数组和函数)都转换为 true。对于包装对象也是这样
 ```
 console.log(Boolean({}))// true
 console.log(Boolean(new Boolean(false))) // true
 ```
+
 ### 对象转字符串和数字
 对象到字符串和对象到数字的转换都是通过调用待转换对象的一个方法来完成的。而 JavaScript 对象有两个不同的方法来执行转换，一个是 toString，一个是 valueOf。注意这个跟上面所说的 ToString 和 ToNumber 是不同的，这两个方法是真实暴露出来的方法。
 
@@ -196,6 +201,7 @@ console.log((new Date(2010, 0, 1)).toString()) // Fri Jan 01 2010 00:00:00 GMT+0
 var date = new Date(2017, 4, 21);
 console.log(date.valueOf()) // 1495296000000
 ```
+
 ### 对象转字符串
 所以总结下，对象转字符串(就是 Number() 函数)可以概括为：
 
@@ -834,6 +840,7 @@ If-None-Match的header会将上次返回的Etag发送给服务器，询问该资
 ### 怎么设置强缓存与协商缓存
 1. 后端服务器设置
 2. nginx配置
+
 ### 当发新包的时候，怎么避免加载老的缓存资源
 使用协商缓存，每次请求index.html不拿浏览器缓存，直接请求服务器，这样就保证资源更新了，用户能马上访问到新资源
 
@@ -918,6 +925,12 @@ Promise 必须为以下三种状态之一：等待态（Pending）、执行态�
 通过reject拒绝
 
 ## await内部的原理？
+### 基本原理
+async / await 本质上就是 generator 的语法糖
+
+内置执行器，无需手动执行 next() 方法
+
+### generator
 
 ## JavaScript中substring()、substr()、slice()的区别
 - substring(start,end)返回指定下标间的字符，下标必须为正整数

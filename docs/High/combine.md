@@ -386,7 +386,6 @@ debounce(mouseMove, 1000);
 ```
 本来应该一次传入两个参数的add函数，柯里化方法，变成每次调用都只用传入一个参数，调用两次后，得到最后的结果。
 
-
 再看看，一道经典的面试题。
 
     编写一个sum函数，实现如下功能：
@@ -402,6 +401,10 @@ debounce(mouseMove, 1000);
         }
     }
 ```
+
+### 尾递归
+函数调用自身，称为递归。如果尾调用自身，就称为尾递归。
+[尾调用优化-阮一峰](https://www.ruanyifeng.com/blog/2015/04/tail-call.html)
 
 ### 使用场景
 
@@ -438,3 +441,7 @@ debounce(mouseMove, 1000);
 ### 跨域问题。手写jsonp。说说代理服务器具体那种。
 
 ## es6如何转换es5？babel的原理是啥？
+
+## git merge、git rebase的区别
+
+## 路由原理
