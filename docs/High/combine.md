@@ -48,7 +48,6 @@ http2.0是一种安全高效的下一代http传输协议。安全是因为http2.
 2. --with-http_ssl_module 跟 --with-http_v2_module
 --with-http_ssl_module模块是因为http2.0协议是一种https协议。
 
-
 [参考链接](https://juejin.cn/post/6844903984524705800)
 
 ### http的属性以及https的区别
@@ -65,8 +64,90 @@ http2.0是一种安全高效的下一代http传输协议。安全是因为http2.
 - HTTPS 其实就是建构在 SSL/TLS 之上的 HTTP 协议，所以，HTTPS 比 HTTP 要更耗费服务器资源。
 
 ### http能取消吗？如何取消？
+1. XHR 中断请求
+XHR 请求的中断是通过 xhr.abort(); 来完成的。
+
+2. Fetch 中断请求
+```
+const controller = new AbortController();
+const signal = controller.signal;
+console.log(signal, "signal的初始状态");
+signal.addEventListener("abort", function (e) {
+    console.log(signal, "signal的中断状态");
+});
+
+
+fetch("/upload", {signal})
+.then((res) => {
+    console.log(res, "请求成功");
+}).catch(function (thrown) {
+    console.log(thrown);
+});
+// 增加部分结束
+controller.abort({
+    name: "CondorHero",
+    age: 19
+});
+```
+fetch 通过 controller.abort 中断请求传入的形参不能被很好的接收。(不兼容 IE)
+
+3. Axios 请求中断
+```
+const controller = new AbortController();
+
+axios.get('/foo/bar', {
+   signal: controller.signal
+}).then(function(response) {
+   //...
+});
+// cancel the request
+controller.abort()
+```
 
 ### http2与http1.1的区别？
+**从技术角度而言，http1.1和2.0 最大的区别是二进制框架层。与 http1.1把所有请求和响应作为纯文本不同，http2 使用二进制框架层把所有消息封装成二进制，且仍然保持http语法，消息的转换让http2能够尝试http1.1所不能的传输方式。**
+
+主要就是http2升级的几个方面来讲:
+1. 流水线和队头阻塞
+- http1.1: 
+客户端首次接受的响应常常不能完全渲染。相反，它包含一些其他需要的资源。 因此，客户端必须发出一些其他请求。 Http1.0客户端的每一个请求必须重新连接，这是非常耗时和资源的。
+         
+Http1.1 通过引入长连接和流水线技术处理了这个问题。 通过长连接，http1.1假定这个tcp连接应该一直打开直到被通知关闭。 这就允许客户端通过同一连接发送多个请求。不巧的是，这优化策略有个瓶颈。当一个队头的请求不能收到响应的资源，它将会阻塞后面的请求。这就是知名的队头阻塞问题。虽然添加并行的tcp连接能够减轻这个问题，但是tcp连接的数量是有限的，且每个新的连接需要额外的资源。
+ 
+- http2:    
+在http2 ， 二进制框架层编码 请求和响应 并把它们分成更小的包，能显著的提高传输的灵活性。
+
+与http1.1利用多个tcp连接来减少队头阻塞的影响相反，http2在两端建立一个单独的连接。该连接包含多个数据流。 每个流包含多个请求/响应格式的消息 。 最终，每个消息被划分为更小的帧单元。
+
+2. 优先级
+Http2协议允许客户端在运行时根据用户交互重新分配权重和改变依赖。 然而，服务器端会改变优先级根据如果某个流因为请求特定资源被阻塞。
+
+3. 缓冲区溢出
+- http1.1: 
+http1.1流控制基于tcp连接。当连接建立时，两端通过系统默认机制建立缓冲区。 并通过ack报文来通知对方接收窗口大小。
+
+因为Http1.1 依靠传输层来避免流溢出，每个tcp连接需要一个独立的流控制机制。
+
+- http2: 
+http2通过一个连接来多路复用。 结果是在传输层的tcp连接不足以管理每个流的发送。http2允许客户端和服务器端实现他们自己的流控制机制，而不是依赖传输层。两端在传输层交换可用的缓冲区大小，来让他们在多路复用流上设置自己的接收窗口。
+   
+4. 预测资源请求
+- http1.1 资源内联: 
+如果开发者提前知道客户机器需要哪些额外的资源来渲染界面，他们使用资源内联的技术来包含需要的资源。例如：如果一个客户需要一个特定的CSS文件，内联该文件就可以不通过请求来拿到，减少客户端必须发送的请求数。
+
+该技术对于小文件是可行的，但是大文件会降低连接的速度。还可能造成文件多次请求。
+
+- http2  服务器推送: 
+因为http2支持多个并发响应，服务器可以提前把HTML 页面中的其他资源在客户端请求之前发给它。
+
+服务器先发送一个PUSH_PROMISE 帧通知客户端将推送资源。该帧只包含头消息，且允许用户提前知道哪些资源将会推送。如果客户端已经缓存，可以拒绝该推送。
+
+5. 压缩技术
+- http1.1: 
+Gzip已经被用于压缩http消息很久了，特别是减少CSS和JS脚本的文件。然而消息头部分依然是纯文本发送。尽管每个头都很小，但随着请求越来越多，连接的负担就会越重，如果带了cookie. Header将变得更大。
+
+- http2:  
+Http2 的二进制框架层在细节上表现出强大的控制力，在头压缩上也是如此。 http2 能把头从他们的数据中分离，并封城头帧和数据帧。 http2特定的压缩程序HPACK可以压缩头帧。 该算法用Huffman编码头metadata，可以很大程度上减少头大小。此外， HPACK可以跟踪先前传输的metadata字段，然后通过动态改变服务器端和客户端共享的索引来进一步压缩
 
 ## 前端安全
 
@@ -171,17 +252,214 @@ window.JSBridge = {
 
 [参考链接](https://juejin.cn/post/6844903585268891662#heading-5)
 
-## js的设计模式
+# js的设计模式
+------------
 设计模式可以被分为三大类：创建、结构、行为范例
 
 举例部分常用模式
-### 创建范例
+
+## 创建范例
     创建范例包括不同的创建对象的机制。
 
-#### 单例模式
-#### 工厂方法
-#### 策略模式
-#### 发布-订阅模式
+### 单例模式
+一个类只有一个实例，并提供一个访问它的全局访问点。
+
+```
+class LoginForm {
+    constructor() {
+        this.state = 'hide'
+    }
+    show() {
+        if (this.state === 'show') {
+            alert('已经显示')
+            return
+        }
+        this.state = 'show'
+        console.log('登录框显示成功')
+    }
+    hide() {
+        if (this.state === 'hide') {
+            alert('已经隐藏')
+            return
+        }
+        this.state = 'hide'
+        console.log('登录框隐藏成功')
+    }
+ }
+ LoginForm.getInstance = (function () {
+     let instance
+     return function () {
+        if (!instance) {
+            instance = new LoginForm()
+        }
+        return instance
+     }
+ })()
+
+let obj1 = LoginForm.getInstance()
+obj1.show()
+
+let obj2 = LoginForm.getInstance()
+obj2.hide()
+
+console.log(obj1 === obj2)
+```
+#### 优点
+
+- 划分命名空间，减少全局变量
+- 增强模块性，把自己的代码组织在一个全局变量名下，放在单一位置，便于维护
+- 且只会实例化一次。简化了代码的调试和维护
+
+#### 缺点
+
+由于单例模式提供的是一种单点访问，所以它有可能导致模块间的强耦合 从而不利于单元测试。无法单独测试一个调用了来自单例的方法的类，而只能把它与那个单例作为一个单元一起测试。
+
+### 工厂方法
+工厂模式定义一个用于创建对象的接口，这个接口由子类决定实例化哪一个类。该模式使一个类的实例化延迟到了子类。而子类可以重写接口方法以便创建的时候指定自己的对象类型。
+
+```
+class Product {
+    constructor(name) {
+        this.name = name
+    }
+    init() {
+        console.log('init')
+    }
+    fun() {
+        console.log('fun')
+    }
+}
+
+class Factory {
+    create(name) {
+        return new Product(name)
+    }
+}
+
+// use
+let factory = new Factory()
+let p = factory.create('p1')
+p.init()
+p.fun()
+```
+
+#### 优点
+
+- 创建对象的过程可能很复杂，但我们只需要关心创建结果。
+- 构造函数和创建者分离, 符合“开闭原则”
+- 一个调用者想创建一个对象，只要知道其名称就可以了。
+- 扩展性高，如果想增加一个产品，只要扩展一个工厂类就可以。
+
+#### 缺点
+
+添加新产品时，需要编写新的具体产品类,一定程度上增加了系统的复杂度
+考虑到系统的可扩展性，需要引入抽象层，在客户端代码中均使用抽象层进行定义，增加了系统的抽象性和理解难度
+
+## 结构范例
+   结构范例将对象和类组合成更大的结构。
+
+### 装饰
+装饰通过增加一个修饰对象来包裹原来的对象，从而给原来的对象添加新的行为。如果你熟悉React或者高阶组件（HOC），你内心的小铃铛可能会叮当一下。
+
+从技术上讲，React中的组件是函数而不是对象。但如果你仔细思索React上下文（React Context）或者Memo是怎么运作的，你会发现我们将组件作为子组件传入HOC后，子组件而可以访问某些功能。
+
+在下面的例子里中ContextProvider组件接受子组件作为prop：
+```
+import { useState } from 'react'
+import Context from './Context'
+
+const ContextProvider: React.FC = ({children}) => {
+
+    const [darkModeOn, setDarkModeOn] = useState(true)
+    const [englishLanguage, setEnglishLanguage] = useState(true)
+
+    return (
+        <Context.Provider value={{
+            darkModeOn,
+            setDarkModeOn,
+            englishLanguage,
+            setEnglishLanguage
+        }} >
+            {children}
+        </Context.Provider>
+    )
+}
+
+export default ContextProvider
+```
+然后我们包裹整个应用：
+
+```
+export default function App() {
+  return (
+    <ContextProvider>
+      <Router>
+
+        <ErrorBoundary>
+          <Suspense fallback={<></>}>
+            <Header />
+          </Suspense>
+
+          <Routes>
+              <Route path='/' element={<Suspense fallback={<></>}><AboutPage /></Suspense>}/>
+
+              <Route path='/projects' element={<Suspense fallback={<></>}><ProjectsPage /></Suspense>}/>
+
+              <Route path='/projects/helpr' element={<Suspense fallback={<></>}><HelprProject /></Suspense>}/>
+
+              <Route path='/projects/myWebsite' element={<Suspense fallback={<></>}><MyWebsiteProject /></Suspense>}/>
+
+              <Route path='/projects/mixr' element={<Suspense fallback={<></>}><MixrProject /></Suspense>}/>
+
+              <Route path='/projects/shortr' element={<Suspense fallback={<></>}><ShortrProject /></Suspense>}/>
+
+              <Route path='/curriculum' element={<Suspense fallback={<></>}><CurriculumPage /></Suspense>}/>
+
+              <Route path='/blog' element={<Suspense fallback={<></>}><BlogPage /></Suspense>}/>
+
+              <Route path='/contact' element={<Suspense fallback={<></>}><ContactPage /></Suspense>}/>
+          </Routes>
+        </ErrorBoundary>
+
+      </Router>
+    </ContextProvider>
+  )
+}
+```
+接着，我们使用useContext钩子，使得应用内所有组件都可以获得定义在Context的状态（state）：
+
+```
+const AboutPage: React.FC = () => {
+
+    const { darkModeOn, englishLanguage } = useContext(Context)
+    
+    return (...)
+}
+
+export default AboutPage
+```
+这个例子可能不是书的作者在写这个模式时想到的确切实现，但我相信想法是一样的：把一个对象放在另一个对象中，这样它就可以访问某些功能。;)
+
+## 行为范式
+   行为范式控制不同对象之间的通讯。
+   
+### 观察者
+观察者模式允许你定义一个订阅机制来通知多个对象它们正在观察的对象发生的任何事件。基本上，这就像在给定对象上有一个事件侦听器，当该对象执行我们正在侦听的操作时，我们会采取一些行动。
+
+React的useEffect钩子就是一个很好的例子。 useEffect在我们声明的那一刻执行给定的函数。
+
+钩子分为两个主要部分：可执行函数和依赖数组。如果数组为空，如下例所示，每次渲染组件时都会执行该函数。
+
+```
+useEffect(() => { console.log('The component has rendered') }, [])
+```
+如果在依赖数组中声明任何变量，则该函数将仅在这些变量发生变化时执行。
+
+```  
+useEffect(() => { console.log('var1 has changed') }, [var1])
+```
+也可以将JavaScript的事件监听器视为观察者模式。另外，响应式编程和库如RxJS，用来处理异步信息和事件的方法也是这个模式。
+   
 
 ## CSR 和 SSR 的区别
 
@@ -279,6 +557,7 @@ HTML5 引入了 <picture> 元素，该元素可以让图片资源的调整更加
 #### 降低图片质量
 - 一是通过 webpack 插件 image-webpack-loader，
 - 二是通过在线网站进行压缩。
+
 #### 尽可能利用 CSS3 效果代替图片
 
 ### 减少重绘重排
@@ -406,8 +685,6 @@ debounce(mouseMove, 1000);
 函数调用自身，称为递归。如果尾调用自身，就称为尾递归。
 [尾调用优化-阮一峰](https://www.ruanyifeng.com/blog/2015/04/tail-call.html)
 
-### 使用场景
-
 #### 参数复用
 ```
   var curriedAdd = curry(add, 5)
@@ -418,9 +695,9 @@ debounce(mouseMove, 1000);
 
 上面传入多个参数的sum(1)(2)(3),就是延迟执行的最后例子，传入参数个数没有满足原函数入参个数，都不会立即返回结果。
 ```
-   addEventListener('click', hander.bind(this, arg1,arg2...))
-   
-   addEventListener('click', curry(hander)) 
+addEventListener('click', hander.bind(this, arg1,arg2...))
+
+addEventListener('click', curry(hander)) 
 ```
 
 ### 缺点
@@ -430,18 +707,321 @@ debounce(mouseMove, 1000);
 1. 递归，效率非常差，
 1. arguments, 变量存取慢，访问性很差,
 
-## input事件传播
-
 ## 一些常用array的api
+- 判断数组的方法有
+1. xx instanceof Array
+1. Array.isArray()
+1. Object.prototype.toString.call() === "[object Array]"
 
-## 面向对象的三大特性
+### 改变元数组
+unshift、push、shift、pop，splice
+
+- splice
+splice(m,n,e1,e2,e3) 从索引m（包括）到n（不包括）的元素删除数组，再在该位置处添加e1，e2，e3。若n传入0，则只增加；若只传m和n，则只删除；若只传m，则从m位置删除到末位。放回删除元素数组
+
+### 不改变
+slice， concat，indexOf 和 includes，filter、find 和 findIndex,of 和 from, some 和 every, map 和 forEach
+
+- slice
+slice(m, n)返回原数组索引m（包含）到n（不包含）的元素数组。不传参数默认全部截取，只传一个参数，从该位置截取到末位。类似于String.prototype.substring
+
+- indexOf 和 includes
+indexOf() 返回索引，不存在就返回 -1。inclues()返回布尔值。
+
+NaN 不能通过indexOf()判断，它是通过“===”比较的。
+```
+arr = [1, "2", null, NaN];
+arr.indexOf(NaN); // -1
+arr.includes(NaN); // true
+```
+
+### of 和 from
+of()类似于new Array()，但后者如果传入一个参数，则是设置数组长度。
+
+from() 把伪数组转换为真数组，类似于[].slice.call()（或者写成Array.prototype.slice.call()）
+
+伪数组有DOM集、arguments、{0: "zero", 1: "one", length: 2}
+
+```
+Array.of(1,2,3,4); // [ 1, 2, 3, 4 ]
+Array.from({0: "zero", 1: "one", length: 2}); // [ "zero", "one" ]
+```
+
+## 面向对象
+
+### 面向对象的三大特性
+面向对象的三个基本特征是：封装、继承、多态
+
+- 封装
+封装最好理解了。封装是面向对象的特征之一，是对象和类概念的主要特性。封装，也就是把客观事物封装成抽象的类，并且类可以把自己的数据和方法只让可信的类或者对象操作，对不可信的进行信息隐藏。
+
+- 继承
+继承是指这样一种能力：它可以使用现有类的所有功能，并在无需重新编写原来的类的情况下对这些功能进行扩展。通过继承创建的新类称为“子类”或“派生类”，被继承的类称为“基类”、“父类”或“超类”。
+
+要实现继承，可以通过“继承”（Inheritance）和“组合”（Composition）来实现。
+
+- 多态性
+多态性（polymorphisn）是允许你将父对象设置成为和一个或更多的他的子对象相等的技术，赋值之后，父对象就可以根据当前赋值给它的子对象的特性以不同的方式运作。简单的说，就是一句话：允许将子类类型的指针赋值给父类类型的指针。
+
+实现多态，有两种方式，覆盖和重载。覆盖和重载的区别在于，覆盖在运行时决定，重载是在编译时决定。并且覆盖和重载的机制不同，例如在 Java 中，重载方法的签名必须不同于原先方法的，但对于覆盖签名必须相同。
+
+### 面向对象的五大基本原则
+1. 单一职责原则（SRP）
+其核心思想为：一个类，最好只做一件事，只有一个引起它的变化。
+
+一个类，最好有且仅有一个引起它变化的原因。
+
+举个栗子，职员类里包括了普通员工、经理、老板，那类中势必需要用if else来区分判断，而且无论是这三种职员的需求发生变化，都会影响到整个职员类。
+
+按照“单一职责原则”，将普通员工、经理、老板分别建一个类，既不用if else加以区分，也不会在修改某个职员类别的时候影响另一个。
+
+2. 开放封闭原则（OCP）
+其核心思想是：软件实体应该是可扩展的，而不可修改的。
+
+一个类，可以扩展（添加属性和功能），但是不要修改已经写好的属性和方法。
+
+实现开开放封闭原则的核心思想就是对抽象编程，而不对具体编程，因为抽象相对稳定。
+打个简单的比方，X的大舅二舅都是他舅，是有血缘关系的舅舅，如果突然冒出来一个跟他有血缘关系的三舅，那也是他舅舅。同时也不能改变他大舅和二舅的亲缘关系。
+
+3.里氏替换原则（LSP)
+其核心思想是：子类必须能够替换其基类。
+
+类A是类B的父类，那么在进行调用的时候，类A可以引用类B，但是反过来不行。
+
+其实可以粗糙地理解为，类A就是对外提供一个接口，具体的实现在类B中。
+
+实现的方法是面向接口编程：将公共部分抽象为基类接口或抽象类，通过Extract Abstract Class，在子类中通过覆写父类的方法实现新的方式支持同样的职责。
+
+也就是说，其实里氏替换原则是继承和多态的综合体现。
+
+4. 依赖倒置原则（DIP)
+其核心思想是：依赖于抽象。具体而言就是高层模块不依赖于底层模块，二者都同依赖于抽象；抽象不依赖于具体，具体依赖于抽象。
+
+在对客观事物抽象成逻辑实体时，可以先思考，同类事物的共性是什么，将这个共性作为这类事物的“高层模块”，若干不同的客观事物作为“底层模块”在依赖”高层“之后，对共性进行特定描述。
+
+举个栗子，苹果跟西瓜都是水果，水果的共同属性是水分、糖分。在这里，”水果“作为高层模块，其属性可以在描述“苹果”和“西瓜”的时候使用，所以“苹果”“西瓜”在此是“底层模块”。
+
+5. 接口隔离原则
+其核心思想是：使用多个小的专门的接口，而不要使用一个大的总接口。
+
+接口中定义属性和需要子类实现的方法，实现类必须完全实现接口的所有方法、属性。为什么要接口隔离呢？目的有二：
+
+- 避免引用接口的类，需要实现其实用不到的接口方法、属性。
+- 避免当接口修改的时候，有一连串的实现类需要更改。
+
+分离的手段主要有以下两种：1、委托分离，通过增加一个新的类型来委托客户的请求，隔离客户和接口的直接依赖，但是会增加系统的开销。2、多重继承分离，通过接口多继承来实现客户的需求，这种方式是较好的。
+
+- 委托分离，不直接使用原先的接口，可以用另外增加一个新的接口或类来实现需求。
+- 多重继承分离，JDK源码、Spring框架使用了这种方式，后续的JDK源码解析系列会提及，好奇的朋友可以查看集合类的结构。
 
 ## 同源策略
-### 跨域有哪些方法？document.domain的限制是啥？CORS的实现原理？
-### 跨域问题。手写jsonp。说说代理服务器具体那种。
+同源是指 同协议 、同域名、同端口。
+### 跨域有哪些方法？
+1. JSONP
+利用 <script> 标签没有跨域的限制，缺点是仅支持get方法具有局限性,不安全可能会遭受XSS攻击。
+```
+function jsonp({ url, params, callback }) {
+  return new Promise((resolve, reject) => {
+    let script = document.createElement('script')
+    window[callback] = function(data) {
+      resolve(data)
+      document.body.removeChild(script)
+    }
+    params = { ...params, callback } // wd=b&callback=show
+    let arrs = []
+    for (let key in params) {
+      arrs.push(`${key}=${params[key]}`)
+    }
+    script.src = `${url}?${arrs.join('&')}`
+    document.body.appendChild(script)
+  })
+}
+jsonp({
+  url: 'http://localhost:3000/say',
+  params: { wd: 'Iloveyou' },
+  callback: 'show'
+}).then(data => {
+  console.log(data)
+})
+```
 
-## es6如何转换es5？babel的原理是啥？
+2. CORS
+CORS 和前端没什么关系，但是通过这种方式解决跨域问题的话，会在发送请求时出现两种情况，分别为简单请求和复杂请求
+-  简单请求
+只要同时满足以下两大条件，就属于简单请求
+条件1：使用下列方法之一：
+
+    GET
+    HEAD
+    POST
+
+条件2：Content-Type 的值仅限于下列三者之一：
+
+    text/plain
+    multipart/form-data
+    application/x-www-form-urlencoded
+
+- 复杂请求
+不符合以上条件的请求就是复杂请求了。 复杂请求的CORS请求，会在正式通信之前，增加一次HTTP查询请求，称为"预检"请求,该请求是 option 方法的，通过该请求来知道服务端是否允许跨域请求。
+```
+// 允许哪个方法访问我
+res.setHeader('Access-Control-Allow-Methods', 'PUT')
+// 预检的存活时间
+res.setHeader('Access-Control-Max-Age', 6)
+// OPTIONS请求不做任何处理
+if (req.method === 'OPTIONS') {
+  res.end() 
+}
+// 定义后台返回的内容
+app.put('/getData', function(req, res) {
+  console.log(req.headers)
+  res.end('我不爱你')
+})
+```
+
+3. postMessage
+postMessage是HTML5 XMLHttpRequest Level 2中的API，且是为数不多可以跨域操作的window属性之一，它可用于解决以下方面的问题：
+
+- 页面和其打开的新窗口的数据传递
+- 多窗口之间消息传递
+- 页面与嵌套的iframe消息传递
+- 上面三个场景的跨域数据传递
+
+    otherWindow.postMessage(message, targetOrigin, [transfer]);
+
+4. websocket
+Websocket是HTML5的一个持久化的协议，它实现了浏览器与服务器的全双工通信，同时也是跨域的一种解决方案。WebSocket和HTTP都是应用层协议，都基于 TCP 协议。但是 WebSocket 是一种双向通信协议，在建立连接之后，WebSocket 的 server 与 client 都能主动向对方发送或接收数据。同时，WebSocket 在建立连接时需要借助 HTTP 协议，连接建立好了之后 client 与 server 之间的双向通信就与 HTTP 无关了。
+
+5. nginx反向代理
+通过nginx配置一个代理服务器（域名与domain1相同，端口不同）做跳板机，反向代理访问domain2接口，并且可以顺便修改cookie中domain信息，方便当前域cookie写入，实现跨域登录。
+
+先下载nginx，然后将nginx目录下的nginx.conf修改如下:
+```
+// proxy服务器
+server {
+    listen       81;
+    server_name  www.domain1.com;
+    location / {
+        proxy_pass   http://www.domain2.com:8080;  #反向代理
+        proxy_cookie_domain www.domain2.com www.domain1.com; #修改cookie里域名
+        index  index.html index.htm;
+
+        # 当用webpack-dev-server等中间件代理接口访问nignx时，此时无浏览器参与，故没有同源限制，下面的跨域配置可不启用
+        add_header Access-Control-Allow-Origin http://www.domain1.com;  #当前端只跨域不带cookie时，可为*
+        add_header Access-Control-Allow-Credentials true;
+    }
+}
+```
+最后通过命令行nginx -s reload启动nginx
+
+6. window.name + iframe
+同域名情况下，可以通信
+
+### document.domain的限制是啥？
+document.domain这个方法使用极其简单，但是也有较大的限制，主要用于主域相同的域之间的数据通信。
+
+`
+已弃用: 不再推荐使用该特性。虽然一些浏览器仍然支持它，但也许已从相关的 web 标准中移除，也许正准备移除或出于兼容性而保留。请尽量不要使用该特性，并更新现有的代码；参见本页面底部的兼容性表格以指导你作出决定。请注意，该特性随时可能无法正常工作。
+`
+    
+    直接看例子就能明白:
+
+- 一级域名：www.baidu.com
+- 二级域名：music.baidu.com
+显然，这是跨域的
+
+**本地设置不同域名**
+
+可以通过配置host文件来设置不同的域名
+```
+127.0.0.1       www.yuhua.com
+127.0.0.1       a.yuhua.com
+127.0.0.1       b.yuhua.com
+```
+
+#### 如何通过document.domain实现跨域
+前提准备：
+- http://a.yuhua.com:3000/a.html起a.html
+- http://b.yuhua.com:3000/b.html起b.html
+```
+ //a.html
+ <iframe src="http://b.yuhua.com:4000/b.html" "load()" id="frame"></iframe>
+ <script type="text/javascript">
+   document.domain = 'yuhua.com';
+   function load(){
+    console.log(frame.contentWindow.name);
+   }
+ </script>
+
+ //b.html
+ <script type="text/javascript">
+  document.domain = 'yuhua.com';
+  var name = 'yuhua';
+ </script>
+```
+现象：加载a.html，会打印"yuhua"
+
+原因分析：当主域之间相互通信的时候，只要将两者的document.domain赋值为当前的主域地址，即可实现跨域通信。
+
+## es6如何转换es5？
+转换过程分为三步：
+
+1. Parser 解析
+第一步主要是将 ES6 语法解析为 AST 抽象语法树。简单地说就是将代码打散成颗粒组装的对象。这一步主要是通过 babylon 插件来完成。
+
+2. Transformer 转换
+第二步是将打散的 AST 语法通过配置好的 plugins（babel-traverse 对 AST 进行遍历转译）和 presets （es2015 / es2016 / es2017 / env / stage-0 / stage-4 其中 es20xx 表示转换成该年份批准的标准，env 是最新标准，stage-0 和 stage-4 是实验版）转换成新的 AST 语法。这一步主要是由 babel-transform 插件完成。plugins 和 presets 通常在 .babelrc 文件中配置。
+
+3. Generator 生成
+第三步是将新的 AST 语法树对象再生成浏览器都可以识别的 ES5 语法。这一步主要是由 babel-generator 插件完成。
+
+### babel的原理是啥？
+Babel 内部原理是将 JS 代码转换为 AST，对 AST 应用各种插件进行处理，最终输出编译后的 JS 代码。
 
 ## git merge、git rebase的区别
+git rebase 和 git merge 一样都是用于从一个分支获取并且合并到当前分支，但是他们采取不同的工作方式，以下面的一个工作场景说明其区别
 
-## 路由原理
+### merge
+```
+git checkout feature
+git merge master
+```
+或者执行更简单的：
+```
+git merge master feature
+```
+marge 特点：自动创建一个新的commit
+
+如果合并的时候遇到冲突，仅需要修改后重新commit
+
+优点：记录了真实的commit情况，包括每个分支的详情
+
+缺点：因为每次merge会自动产生一个merge commit，所以在使用一些git 的GUI tools，特别是commit比较频繁时，看到分支很杂乱。
+
+### rebase
+本质是变基 变基 变基
+
+变基是什么? 找公共祖先
+
+执行以下命令：
+```
+git checkout feature
+git rebase master
+```
+rebase 特点：会合并之前的commit历史
+- 优点：得到更简洁的项目历史，去掉了merge commit
+- 缺点：如果合并出现代码问题不容易定位，因为re-write了history
+
+合并时如果出现冲突需要按照如下步骤解决
+
+修改冲突部分
+- git add
+- git rebase --continue
+- （如果第三步无效可以执行 git rebase --skip）
+
+**不要在git add 之后习惯性的执行 git commit命令**
+
+如果你想要一个干净的，没有merge commit的线性历史树，那么你应该选择git rebase
+
+如果你想保留完整的历史记录，并且想要避免重写commit history的风险，你应该选择使用git merge
+
