@@ -4,12 +4,187 @@ order: 5
 ---
 
 ## 实现一个on和emit
+```
+let obj = {};
+ 
+window.$on = (name, fn) => {
+    if (!obj[name]) {
+        obj[name] = [];
+    }
+    obj[name].push(fn);
+}
+ 
+window.$emit = (name, value) => {
+    if (obj[name]) {
+        obj[name].forEach(fn => {
+            fn(value);
+        })
+    }
+}
+ 
+window.$off = (name, fn) => {
+    if (name) {
+        if (fn) {
+            let index = obj[name].indexOf(fn);
+            index>-1 && obj[name].splice(index, 1);
+        } else {
+            obj[name].length = 0;
+        }
+    }
+}
+ 
+export default {
+    $on,
+    $emit,
+    $off
+}
+```
+
 ## 双向数据绑定和单(双)向数据流
-## spa应用，v-dom，diff算法，mvvm，组件化开发
+### 单向数据流
+数据流，表明的是数据流向，用大白话说就是数据传递。那么单项数据流 是我们的数据单一方向传输。
+
+### 双向数据绑定
+当我们在前端开发中采用 MV*的模式时，M - model，指的是模型，也就是数据，V - view，指的是视图，也就是页面展现的部分。通常，我们需要编写代码，将从服务器获取的数据进行“渲染”，展现到视图上。每当数据有变更时，我们会再次进行渲染，从而更新视图，使得视图与数据保持一致。也就是：
+
+而另一方面，页面也会通过用户的交互，产生状态、数据的变化，这个时候，我们则编写代码，将视图对数据的更新同步到数据，以致于同步到后台服务器。
+
+## spa应用，v-dom，diff算法，mvvm
+### spa
+SPA（ single-page application ）即一个web项目就只有一个页面（即一个HTML文件,HTML 内容的变换是利用路由机制实现的。
+
+仅在 Web 页面初始化时加载相应的 HTML、JavaScript 和 CSS。一旦页面加载完成，SPA 不会因为用户的操作而进行页面的重新加载或跳转；取而代之的是利用路由机制实现 HTML 内容的变换，UI 与用户的交互，避免页面的重新加载。
+
+优点：
+
+- 用户体验好、快，内容的改变不需要重新加载整个页面，避免了不必要的跳转和重复渲染；
+- 基于上面一点，SPA 相对对服务器压力小；
+- 前后端职责分离，架构清晰，前端进行交互逻辑，后端负责数据处理；
+
+缺点：
+
+- 初次加载耗时多：为实现单页 Web 应用功能及显示效果，需要在加载页面的时候将 JavaScript、CSS 统一加载，部分页面按需加载；
+
+前进后退路由管理：由于单页应用在一个页面中显示所有的内容，所以不能使用浏览器的前进后退功能，所有的页面切换需要自己建立堆栈管理；
+SEO 难度较大：由于所有的内容都在一个页面中动态替换显示，所以在 SEO 上其有着天然的弱势。
+
+### MVVM
+MVVM其实表示的是 Model-View-ViewModel
+
+- Model：模型层，负责处理业务逻辑以及和服务器端进行交互
+- View：视图层：负责将数据模型转化为UI展示出来，可以简单的理解为HTML页面
+- ViewModel：视图模型层，用来连接Model和View，是Model和View之间的通信桥梁
+
+### 虚拟dom（vdom)是什么
+它是一个Object对象模型，用来模拟真实的DOM节点的结构
+
 ## vue响应式原理，defineproperty，proxy，对比一下两者
+### defineproperty
+首先，vue2.0 使用的是通过 Object.defineProperty 方法来实现响应式的。我们来看看 Object.defineProperty方法的参数
+    
+    Object.defineProperty(obj, prop, descriptor)
+
+```
+obj: 要在其上定义属性的对象
+prop: 要定义或修改的属性的名称
+descriptor: 将被定义或修改的属性的描述
+
+obj代表的是你要处理的对象，
+prop为你要定义或者修改的属性的key
+descriptor是一个对象，具体为：
+    configurable 类型： boolean 释义：是否可以修改默认属性
+    enumerable 类型： boolean 释义：是否可以被枚举
+    writable 类型： boolean 释义：是否可以修改修改这个属性的值
+    value类型： any 释义：初始值
+    get 类型： Function 释义：被修饰的属性，在被访问的时候执行
+    set 类型： Function 释义：被修饰的属性，在被修改的时候执行
+```
+
+缺点：
+1. Object.defineProperty的第一个缺陷,无法监听数组变化
+
+因为数组的变化大部分你要使用 数组的方法，vue将数组的原型拿出来，在常用的方法里面，注入render逻辑，再重新赋值给 Array 的原型。
+
+2. 我们在使用vue2的时候，有时候在对象里面添加属性，以及删除属性，是无法触发渲染的。 那么看到上面的原理后，我相信大家已经非常明白为什么不会触发渲染了。 因为这两个操作，根本无法让set执行。所以vue提供了 set和set 和 set和delete 方法。 用于手动触发渲染。 
+
+### proxy
+    const obj = new Proxy(target, handler)
+```
+target: 要监听的对象  类型： 对象，数组，函数，代理对象(Proxy代理的对象)
+
+handler: 回调的方法集合 类型：对象 , 回调方法的合集
+
+  handler.getPrototypeOf()
+  handler.setPrototypeOf()
+  handler.isExtensible()
+  handler.preventExtensions()
+  handler.getOwnPropertyDescriptor()
+  handler.defineProperty()
+  handler.has()
+  handler.get(target, property)
+  handler.set(target, property, value)
+  handler.deleteProperty()
+  handler.ownKeys()
+  handler.apply()
+  handler.construct()
+```
+
+我们很自然的发现了，其中也有get 和set方法。和defineProperty比起来， proxy  接收的target为任何类型的对象，包括原生数组，函数，甚至另一个代理对象， 有了这个，我们会清晰的发现，实现响应式不再那么麻烦了。那么我们先来看看，Proxy如何使用set和get监听数据变化。
+
+### 两者区别
+- Proxy 是对整个对象的代理，而 Object.defineProperty 只能代理某个属性。所以我们在编写响应式函数的时候，defineProperty 需要用for in 去给每个属性添加监听
+- 对象上新增属性，Proxy 可以监听到，Object.defineProperty 不能。
+- 数组新增修改，Proxy 可以监听到，Object.defineProperty 不能。
+- 若对象内部属性要全部递归代理，Proxy 可以只在调用的时候递归，而 Object.definePropery 需要一次完成所有递归，性能比 Proxy 差。 这个我们可以对比两个递归，definePropery 是在一开始，将传入的对象，所有属性，包括内不熟悉全部进行递归。之后才取处理set get。 但是Proxy的递归是在set中，这样，我们就可以根据需求，来调整递归原则，也就是说，在一些条件下，让其不进行递归。 举个很简单的例子。   我们页面上需要渲染一个对象，这个对象总是 会被整体重新赋值。不会单独的去修改其中的属性。那么我们就可以通过Proxy控制不让其递归这个对象，从而提高性能
+- Proxy 不兼容 IE，Object.defineProperty 不兼容 IE8 及以下
+- Proxy 使用上比 Object.defineProperty 方便多。
+
 ## keep-alive
+keepalive 是 Vue 内置的一个组件，可以使被包含的组件保留状态，或避免重新渲染 。也就是所谓的组件缓存
+
+`<keep-alive>` 是Vue的内置组件，能在组件切换过程中将状态保留在内存中，防止重复渲染DOM。
+
+- `<keep-alive>` 包裹动态组件时，会缓存不活动的组件实例，而不是销毁它们。
+- `<keep-alive>` 是一个抽象组件：它自身不会渲染一个 DOM 元素，也不会出现在父组件链中。
+
+### keep-alive生命周期执行
+- 页面第一次进入，钩子的触发顺序created-> mounted-> activated，退出时触发 deactivated 当再次进入（前进或者后退）时，只触发 activated
+- 事件挂载的方法等，只执行一次的放在 mounted 中；组件每次进去执行的方法放在 activated 中；
+
+### keepalive的参数
+keepalive 可以接收3个属性做为参数进行匹配对应的组件进行缓存:
+
+- include 包含的组件(可以为字符串，数组，以及正则表达式,只有匹配的组件会被缓存)
+- exclude 排除的组件(以为字符串，数组，以及正则表达式,任何匹配的组件都不会被缓存)
+- max 缓存组件的最大值(类型为字符或者数字,可以控制缓存组件的个数)
+
+```
+<!-- 如果同时使用include,exclude,那么exclude优先于include， 下面的例子只缓存a组件 -->
+<keep-alive include="a,b" exclude="b"> 
+  <component></component>
+</keep-alive>
+```
+
 ## 使用路由做前端拦截的具体实现是什么？
+主要是利用vue-router提供的钩子函数beforeEach()对路由进行判断
+
+每个钩子方法接收三个参数：
+* to: Route: 即将要进入的目标 路由对象
+* from: Route: 当前导航正要离开的路由
+* next: Function: 一定要调用该方法来 resolve 这个钩子。执行效果依赖 next 方法的调用参数。
+* next(): 进行管道中的下一个钩子。如果全部钩子执行完了，则导航的状态就是 confirmed （确认的）。
+* next(false): 中断当前的导航。如果浏览器的 URL 改变了（可能是用户手动或者浏览器后退按钮），那么 URL 地址会重置到 from 路由对应的地址。
+* next(‘/’) 或者 next({ path: ‘/’ }): 跳转到一个不同的地址。当前的导航被中断，然后进行一个新的导航。
+
+要想统一处理所有http请求和响应，就得用上 axios 的拦截器。通过配置http response inteceptor
+
 ## Vue双向数据绑定的原理
+Vue 数据双向绑定原理是通过 数据劫持 + 发布者-订阅者模式 的方式来实现的，当监听的属性发生变动时通知订阅者，是否需要更新，若更新就会执行对应的更新函数。
+
+常见的基于数据劫持的双向绑定有两种实现
+- 一个是目前Vue在用的 Object.defineProperty
+- 一个是ES2015中新增的 Proxy，而在Vue3.0版本后加入Proxy从而代替Object.defineProperty
+
 ## 请说出vue几种常用的指令
 - v-if：根据表达式的值的真假条件渲染元素。在切换时元素及它的数据绑定 / 组件被销毁并重建。
 - v-show：根据表达式之真假值，切换元素的 display CSS 属性。
@@ -65,6 +240,37 @@ v-show 只是简单地切换元素的 CSS 属性display。有更高的初始消�
 因为Vue的异步更新队列，$nextTick是用来知道什么时候DOM更新完成的。
 
 ## Vue 组件中 data 为什么必须是函数？
+因为使用对象的话，每个实例（组件）上使用的data数据是相互影响的
+
+vue data是函数的原因：
+1. 防止data复用；
+vue中组件是用来复用的，为了防止data复用，将其定义为函数。
+
+2. data独立性；
+vue组件中的data数据都应该是相互隔离，互不影响的，组件每复用一次，data数据就应该被复制一次，之后，当某一处复用的地方组件内data数据被改变时，其他复用地方组件的data数据不受影响，就需要通过data函数返回一个对象作为组件的状态。
+
+3. 作用域；
+当我们将组件中的data写成一个函数，数据以函数返回值形式定义，这样每复用一次组件，就会返回一份新的data，拥有自己的作用域，类似于给每个组件实例创建一个私有的数据空间，让各个组件实例维护各自的数据。
+
+4. js的特性。
+当我们组件的date单纯的写成对象形式，这些实例用的是同一个构造函数，由于JavaScript的特性所导致，所有的组件实例共用了一个data，就会造成一个变了全都会变的结果。
+
+```
+var MyComponent = function() {}
+MyComponent.prototype.data = {
+  a: 1,
+  b: 2,
+}
+// 上面是一个虚拟的组件构造器，真实的组件构造器方法很多
+
+var component1 = new MyComponent()
+var component2 = new MyComponent()
+// 上面实例化出来两个组件实例，也就是通过<my-component>调用，创建的两个实例
+
+component1.data.a === component2.data.a // true
+component1.data.b = 5
+component2.data.b // 5
+```
 
 ## v-for 与 v-if 的优先级
 - v-for的优先级比v-if更高
@@ -96,6 +302,92 @@ v-show 只是简单地切换元素的 CSS 属性display。有更高的初始消�
 1. 组件内的守卫： beforeRouteEnter、beforeRouteUpdate (2.2 新增)、beforeRouteLeave
 
 ## vuex(状态管理器的使用)
+Vuex 是一个专为 Vue.js 应用程序开发的状态管理模式 + 库。它采用集中式存储管理应用的所有组件的状态，并以相应的规则保证状态以一种可预测的方式发生变化。
+
+### State
+```
+//创建且声明一个对象
+export const store = new Vuex.Store({
+    state:{
+        isShow:true,
+        items:[
+        {
+            name:"张三",
+            num:"1"
+        },
+        {
+            name:"李四",
+            num:"2"
+        },
+        {
+            name:"王五",
+            num:"3"
+        }
+        ]
+    }
+})
+```
+使用：
+```
+computed:{
+        itemList(){
+            return this.$store.state.items
+        }
+    },
+```
+
+### Mutations
+我们可以使用mutations配合vuex提供的commit方法来修改state中的状态
+```
+export const store = new Vuex.Store({
+    state:{
+        isShow:false,
+        myData:'',
+        items:[
+            {
+                name:"张三",
+                num:1
+            },
+            {
+                name:"李四",
+                num:2
+            },
+            {
+                name:"王五",
+                num:3
+            }
+            ]
+    },
+    mutations:{
+        //定义一个函数动态修改state的状态值
+        numTurn(state){ /这里的state代表上面的State
+            state.items.forEach(item=>{
+                item.num+=100
+            })
+        }
+    }
+})
+```
+```
+<button @click="$store.commit('numTurn')">改变数字</button>
+```
+
+### store.commit跟dispatch的区别
+- 共同点：在更改状态、触发更改状态时都可以以载荷方式和对象方式进行分发
+- 区别：
+    - commit：(同步操作)
+    
+    mutation注册了一个变更状态的事件后，需要调用 store.commit()来进行状态变更
+    
+    - dispatch：(可以是异步操作)
+    
+    数据提交至 actions ，可用于向后台提交数据
+
+### Action
+如文档中所说,Action类似于Mutations,不同在于：
+
+Aciton提交的是mutation,而不是直接变更状态
+Action可以包含任何异步操作
 
 ## vue中watch，computed 和methods的区别
 ### 计算属性computed :
@@ -120,13 +412,3 @@ Methods是挂载到vue实例所有方法的集合
 - ref ：是 元素的属性，用于设置在元素上
 - $refs ：获取页面中所有含有ref属性的DOM元素
 - $el ：获取Vue实例关联的DOM元素
-
-## 
-## 
-## 
-## 
-## 
-## 
-## 
-## 
-## 
