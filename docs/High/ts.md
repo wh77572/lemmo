@@ -326,3 +326,16 @@ type
 interface -- 接口只声明成员方法，不做实现。
 
 class -- 类声明并实现方法。
+
+```
+interface ContentInterface {
+    getContent(): String;
+}
+
+class Article implements ContentInterface {
+    // 必须实现getContent方法
+    public function getContent(): String {
+        return 'I am an article.';
+    } 
+}
+```
