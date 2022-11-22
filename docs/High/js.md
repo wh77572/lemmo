@@ -8,6 +8,9 @@ order: 3
 最新的 ECMAScript 标准定义了 8 种数据类型：
 
 七种基本数据类型：
+
+String、Number、Boolean、Undefined、Null、Symbol、Bigint
+
 - 布尔值（Boolean），有 2 个值分别是：true 和 false.
 - null，一个表明 null 值的特殊关键字。JavaScript 是大小写敏感的，因此 null 与 Null、NULL或变体完全不同。
 - undefined，和 null 一样是一个特殊的关键字，undefined 表示变量未赋值时的属性。
