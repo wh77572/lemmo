@@ -437,12 +437,12 @@ V8 引擎将保存对象的 堆 (heap) 进行了分代:
 ## new,call,apply,bind方法的实现原理
 javascript中new,call,apply,bind等方法是我们经常要使用到，在伪数组转数组、函数传参、继承等场景中，都离不开他们。
 ### new
-我们用new实例化一个构造函数，生成一个实例对象，而new到底做了什么呢，主要分为以下五步：
+我们用new实例化一个构造函数，生成一个实例对象，而new到底做了什么呢，主要分为以下几步：
 
-2. 创建一个新对象；
-3. 将构造函数的作用域赋给这个新对象(相当于将this 指向新对象);
-4. 执行构造函数中的代码(为这个新对象添加属性和方法);
-5. 返回这个新对象;
+1. 创建一个空的简单 JavaScript 对象（即 {}）；
+1. 然后将空对象的 __proto__ 指向构造函数的原型，使得通过构造函数创建的所有对象可以共享相同的原型。
+1. 改变 this 的指向，指向空对象
+1. 如果该函数没有返回对象，则返回 this。
 
 思路: <br>
 - 那我们就可以用代码来实现了，其实只需要完成这几个功能。
@@ -451,18 +451,53 @@ javascript中new,call,apply,bind等方法是我们经常要使用到，在伪数
     1. 构造函数返回的最后结果是引用数据类型;
 
 ```
-    function MyNew() {
-      let Constructor = Array.prototype.shift.call(arguments); // 1：取出构造函数
-
-      let obj = {} // 2：执行会创建一个新对象
-
-      obj.__proto__ = Constructor.prototype // 3：该对象的原型等于构造函数prototype
-
-      var result = Constructor.apply(obj, arguments) // 4： 执行函数中的代码
-
-      return typeof result === 'object' ? result : obj // 5： 返回的值必须为对象
+    function myNew(Con, ...args) {
+      // 创建一个新的空对象
+      let obj = {};
+      // 将这个空对象的__proto__指向构造函数的原型
+      // obj.__proto__ = Con.prototype;
+      Object.setPrototypeOf(obj, Con.prototype);
+      // 将this指向空对象
+      let res = Con.apply(obj, args);
+      // 对构造函数返回值做判断，然后返回对应的值
+      return res instanceof Object ? res : obj;
     }
 ```
+验证：
+```
+// 构造函数Person
+function Person(name) {
+  this.name = name;
+}
+let per = myNew(Person, '你好，new');
+console.log(per); // {name: "你好，new"}
+console.log(per.constructor === Person); // true
+console.log(per.__proto__ === Person.prototype); // true
+```
+一般情况下构造函数是没有返回值的，但是作为函数，是可以有返回值的。
+
+```
+function Person(name) {
+  this.name = name;
+  return {
+    age: 22
+  }
+}
+let per = myNew(Person, '你好，new');
+// 当构造函数返回对象类型的数据时，会直接返回这个数据， new 操作符无效
+console.log(per); // {age: 22}
+```
+
+```
+function Person(name) {
+  this.name = name;
+  return '十二点的程序员'
+}
+let per = myNew(Person, '你好，new');
+// 而当构造函数返回基础类型的数据，则会被忽略
+console.log(per); // {name: "你好，new"}
+```
+
 ### call，apply，bind调用
 ```
 func.call(thisArg, param1, param2, ...)
@@ -492,6 +527,7 @@ call方法的实现主要有以下三步，比如 fn.call(obj, a, b) ：
       return res;
     }
 ```
+
 ### apply
 apply方法和call方法大同小异，唯一差别就是，apply传入的参数是数组格式。
 ```
@@ -504,6 +540,7 @@ apply方法和call方法大同小异，唯一差别就是，apply传入的参数
       return res;
     }
 ```
+
 ### bind
 bind方法和call、apply方法的差别是，他们都改变了上下文，但是bind没有立即执行函数。
 ```
@@ -594,6 +631,8 @@ var p1 = new Parent();
 ![图片prototype](/assets/imgs/prototype.png "prototype")
 
 ### 原型详解
+[Object详解](https://wangdoc.com/javascript/stdlib/object)
+
 例子:
 
 ```
@@ -641,6 +680,16 @@ Object.__proto__ === Function.prototype
 Object的原型对象也有__proto__属性指向null，null是原型链的顶端
 ```
 Object.prototype.__proto__ === null
+```
+
+另外：
+
+```
+Function.prototype.__proto__ === Object.prototype
+// true
+
+Person.prototype.__proto__ === Function.prototype.__proto__
+// true
 ```
 
 总结:

@@ -13,11 +13,11 @@ order: 4
 ### 虚拟(Virtual)DOM 的工作原理是什么？
 虚拟(Virtual)DOM 分三个步骤工作：
 
-    第1步： 每当 React App 中的任何数据发生变化时，整个 UI 都会以 Virtual DOM 表示形式重新渲染。
-    
-    第2步： 计算之前的 DOM 表示和新的 DOM 之间的差异。
-    
-    第3步： 一旦计算完成，真实的 DOM 只更新那些被改变的东西。
+第1步： 每当 React App 中的任何数据发生变化时，整个 UI 都会以 Virtual DOM 表示形式重新渲染。
+
+第2步： 计算之前的 DOM 表示和新的 DOM 之间的差异。
+
+第3步： 一旦计算完成，真实的 DOM 只更新那些被改变的东西。
 
 ### 区分真实DOM和虚拟DOM。
 | Real DOM    | Virtual  DOM |
@@ -225,37 +225,94 @@ class MyComponent extends React.Component {
 }
 ```
 
-### Refs 与函数组件
+### createRef跟useRef区别
+- createRef 只能用在class组件中，useRef 只能用在函数式组件中。
+- createRef 每次渲染都会返回一个新的引用，而 useRef 每次都会返回相同的引用。
+
+useRef妙用
+- useRef 不仅仅是用来管理 DOM ref 的，它还相当于 this , 可以存放任何变量.  
+- useRef 可以很好的解决闭包带来的不方便性. 你可以在各种库中看到它的身影,   比如 react-use 中的 useInterval , usePrevious …… 
+
+### 回调 Refs
+React 支持 回调 refs 的方式设置 Refs。这种方式可以帮助我们更精细的控制何时 Refs 被设置和解除。
+
+使用 回调 refs 需要将回调函数传递给 React元素 的 ref 属性。这个函数接受 React 组件实例 或 HTML DOM 元素作为参数，将其挂载到实例属性上，如下所示：
+
+```
+import React from 'react';
+
+export default class MyInput extends React.Component {
+    constructor(props) {
+        super(props);
+        this.inputRef = null;
+        this.setTextInputRef = (ele) => {
+            this.inputRef = ele;
+        }
+    }
+
+    componentDidMount() {
+        this.inputRef && this.inputRef.focus();
+    }
+    render() {
+        return (
+            <input type="text" ref={this.setTextInputRef}/>
+        )
+    }
+}
+```
+React 会在组件挂载时，调用 ref 回调函数并传入 DOM元素(或React实例)，当卸载时调用它并传入 null。在 componentDidMount 或 componentDidUpdate 触发前，React 会保证 Refs 一定是最新的。
+
+### Refs 与函数组件 (forwardRef)
 **默认情况下，你不能在函数组件上使用 ref 属性，因为它们没有实例：**
 
 如果要在函数组件中使用 ref，你可以使用 forwardRef（可与 useImperativeHandle 结合使用），或者可以将该组件转化为 class 组件。
 
 ```
-function CustomTextInput(props) {
-  // 这里必须声明 textInput，这样 ref 才可以引用它
-  const textInput = useRef(null);
-
-  function handleClick() {
-    textInput.current.focus();
-  }
-
-  return (
-    <div>
-      <input
-        type="text"
-        ref={textInput} />
-      <input
-        type="button"
-        value="Focus the text input"
-        onClick={handleClick}
-      />
-    </div>
-  );
+const FancyInput=(props, ref) =>{
+  const inputRef = useRef();
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef.current.focus();
+    }
+  }));
+  return <input ref={inputRef} />;
 }
+
+export default forwardRef(FancyInput);
 ```
 
 ### Ref转发是什么？
 Ref 转发是一项将 ref 自动地通过组件传递到其一子组件的技巧。
+
+## memo、useMemo及 useCallback解析
+useCallback 和 useMemo 都会在组件第一次渲染的时候执行，之后会在其依赖的变量发生改变时再次执行；并且这两个hooks都返回缓存的值，useMemo 返回缓存的 变量，useCallback 返回缓存的 函数
+
+### React.memo()
+在 class 组件时代，为了性能优化我们经常会选择使用 PureComponent,每次对 props 进行一次浅比较，当然，除了 PureComponent 外，我们还可以在 shouldComponentUpdate 中进行更深层次的控制。
+
+在 Function 组件中， React 贴心的提供了 React.memo 这个 HOC（高阶组件），与 PureComponent 很相似，但是是专门给 Function Component 提供的，对 Class Component 并不适用。
+
+但是相比于 PureComponent ，React.memo() 可以支持指定一个参数，可以相当于 shouldComponentUpdate 的作用，因此 React.memo() 相对于 PureComponent 来说，用法更加方便。
+
+```
+function MyComponent(props) {
+  /* render using props */
+}
+function areEqual(prevProps, nextProps) {
+  /*
+  return true if passing nextProps to render would return
+  the same result as passing prevProps to render,
+  otherwise return false
+  */
+}
+export default React.memo(MyComponent, areEqual);
+```
+
+### 总结
+- 在子组件不需要父组件的值和函数的情况下，只需要使用 memo 函数包裹子组件即可。
+- 如果有函数传递给子组件，使用 useCallback
+- 如果有值传递给子组件，使用 useMemo
+- useEffect、useMemo、useCallback 都是自带闭包的。也就是说，每一次组件的渲染，其都会捕获当前组件函数上下文中的状态(state, props)，所以每一次这三种hooks的执行，反映的也都是当前的状态，你无法使用它们来捕获上一次的状态。对于这种情况，我们应该使用 ref 来访问。
 
 ## React Router是什么？
 React Router 是一个建立在 React 之上的标准路由库系统。它用于使用 React Router Package 在 React 应用程序中创建路由。它可以帮助您在应用程序中定义多个路线。它为浏览器上的同步 URL 提供将在网页上显示的数据。它维护应用程序的标准结构和行为，主要用于开发单页 Web 应用程序。
@@ -497,6 +554,25 @@ Renderer根据Reconciler为Virtual DOM打的标记，同步执行对应的渲染
 
 ### 请说一下Fiber 架构下 Concurrent 模式的实现原理？
 Concurrent 模式（异步渲染）下的"时间切片"和"优先级"
+
+### 时间切片
+时间切片的核心思想是：如果任务不能在 50 毫秒内执行完，那么为了不阻塞主线程，这个任务应该让出主线程的控制权，使浏览器可以处理其他任务。让出控制权意味着停止执行当前任务，让浏览器去执行其他任务，随后再回来继续执行没有执行完的任务。
+
+### 如何使用时间切片
+时间切片是一种概念，也可以理解为一种技术方案，它不是某个 API 的名字，也不是某个工具的名字。
+
+事实上，时间切片充分利用了“异步”，在早期，可以使用定时器来实现，例如：
+
+// 如果利用时间分片的概念来实现这个功能，我们可以使用requestAnimationFrame+DocumentFragment
+
+```
+btn.onclick = function () {
+  someThing(); // 执行了50毫秒
+  setTimeout(function () {
+    otherThing(); // 执行了50毫秒
+  });
+};
+```
 
 [参考资料](https://blog.ahulib.com/other/React_Fiber%E6%9E%B6%E6%9E%84%E4%B8%8B%E7%9A%84Concurrent%E6%A8%A1%E5%BC%8F.html)
 
