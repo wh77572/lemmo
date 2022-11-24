@@ -13,6 +13,13 @@ META元素通常用于指定网页的描述，关键词，文件的最后修改�
 
 元数据可以被使用浏览器（如何显示内容或重新加载页面），搜索引擎（关键词），或其他 Web 服务调用。
 
+## 盒模型
+盒模型都是由四个部分组成的，分别是margin、border、padding和content。
+
+标准盒模型的width和height属性的范围只包含了content，
+
+IE盒模型的width和height属性的范围包含了border、padding和content。
+
 ## BFC和IFC
     BFC 的全称是 Block Formatting Context，名为 “块级格式化上下文”。
     

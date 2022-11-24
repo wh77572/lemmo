@@ -219,6 +219,8 @@ v-if 是 真正 的 条件渲染，有更高的切换消耗，v-if适合运行�
 
 v-show 只是简单地切换元素的 CSS 属性display。有更高的初始消耗，v-show适合频繁切换
 
+优先级： v-if > v-show 
+
 ## vue常用的修饰符
 - .stop - 调用 event.stopPropagation()，禁止事件冒泡。
 - .prevent - 调用 event.preventDefault()，阻止事件默认行为。
@@ -238,6 +240,11 @@ v-show 只是简单地切换元素的 CSS 属性display。有更高的初始消�
 
 ## 什么是$nextTick？
 因为Vue的异步更新队列，$nextTick是用来知道什么时候DOM更新完成的。
+
+1. nextTick是Vue提供的一个全局API,是在下次DOM更新循环结束之后执行延迟回调，在修改数据之后使用$nextTick，则可以在回调中获取更新后的DOM；
+2. Vue在更新DOM时是异步执行的。只要侦听到数据变化，Vue将开启1个队列，并缓冲在同一事件循环中发生的所有数据变更。如果同一个watcher被多次触发，只会被推入到队列中-次。这种在缓冲时去除重复数据对于避免不必要的计算和DOM操作是非常重要的。nextTick方法会在队列中加入一个回调函数，确保该函数在前面的dom操作完成后才调用；
+3. 比如，我在干什么的时候就会使用nextTick，传一个回调函数进去，在里面执行dom操作即可；
+4. 我也有简单了解nextTick实现，它会在callbacks里面加入我们传入的函数，然后用timerFunc异步方式调用它们，首选的异步方式会是Promise。这让我明白了为什么可以在nextTick中看到dom操作结果。
 
 ## Vue 组件中 data 为什么必须是函数？
 因为使用对象的话，每个实例（组件）上使用的data数据是相互影响的

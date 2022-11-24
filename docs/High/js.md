@@ -236,6 +236,9 @@ console.log(Number(new Error('a'))) // NaN
 
 *[参考资料](https://github.com/mqyqingfeng/Blog/issues/159)*
 
+## 为什么 0.1 + 0.2 不等于 0.3 ？
+由于计算机的资源是有限的，所以是没办法用二进制精确的表示 0.1，只能用「近似值」来表示，就是在有限的精度情况下，最大化接近 0.1 的二进制数，于是就会造成精度缺失的情况。
+
 ## 闭包
 *[对闭包的看法，为什么要用闭包？说一下闭包原理以及应用场景](https://github.com/lgwebdream/FE-Interview/issues/17)*
 
