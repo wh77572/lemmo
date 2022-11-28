@@ -70,7 +70,7 @@ static是position属性的默认值。如果省略position属性，浏览器就�
 
 这时，浏览器会按照源码的顺序，决定每个元素的位置，这称为"正常的页面流"（normal flow）。每个块级元素占据自己的区块（block），元素与元素之间不产生重叠，这个位置就是元素的默认位置。
 
-    注意，static定位所导致的元素位置，是浏览器自主决定的，所以这时top、bottom、left、right这四个属性无效。
+> 注意，static定位所导致的元素位置，是浏览器自主决定的，所以这时top、bottom、left、right这四个属性无效。
 ###  relative
 relative表示，相对于默认位置（即static时的位置）进行偏移，即定位基点是元素的默认位置。
 
@@ -84,7 +84,101 @@ fixed表示，相对于视口（viewport，浏览器窗口）进行偏移，即�
 ###  sticky
 粘性定位可以被认为是相对定位和固定定位的混合。元素在跨越特定阈值前为相对定位，之后为固定定位。
 
-    须指定 top, right, bottom 或 left 四个阈值其中之一，才可使粘性定位生效。否则其行为与相对定位相同。
+须指定 top, right, bottom 或 left 四个阈值其中之一，才可使粘性定位生效。否则其行为与相对定位相同。
+
+## 清除浮动
+1. 使用带clear属性的空元素
+在浮动元素后使用一个空元素如`<div class="clear"></div>`，并在CSS中赋予.clear{clear:both;}属性即可清理浮动
+
+2. 使用CSS的overflow属性
+3. 给浮动的元素的容器添加浮动
+影响布局，不推荐使用。
+
+4. 使用邻接元素处理
+给浮动元素后面的元素添加clear属性。
+
+5. 使用CSS的:after伪元素
+
+## ::before 和:after 中双冒号和单冒号有什么区别
+单冒号（:）用于CSS3伪类，
+双冒号（::）用于CSS3伪元素。（伪元素由双冒号和伪元素名称组成）
+
+### 伪类与伪元素的区别
+伪类用于当已有的元素处于某个状态时，为其添加对应的样式，这个状态是根据用户行为而动态变化的。比如说，当用户悬停在指定的
+元素时，我们可以通过:hover来描述这个元素的状态。
+
+伪元素用于创建一些不在文档树中的元素，并为其添加样式。它们允许我们为元素的某些部分设置样式。比如说，我们可以通过::be
+fore来在一个元素前增加一些文本，并为这些文本添加样式。虽然用户可以看到这些文本，但是这些文本实际上不在文档树中。
+
+## 怎么让 Chrome 支持小于 12px 的文字？
+（1）可以使用Webkit的内核的-webkit-text-size-adjust的私有CSS属性来解决，只要加了-webkit-text-size
+-adjust:none;字体大小就不受限制了。但是chrome更新到27版本之后就不可以用了。所以高版本chrome谷歌浏览器
+已经不再支持-webkit-text-size-adjust样式，所以要使用时候慎用。
+
+（2）还可以使用css3的transform缩放属性-webkit-transform:scale(0.5);注意-webkit-transform:scale(0.
+75);收缩的是整个元素的大小，这时候，如果是内联元素，必须要将内联元素转换成块元素，可以使用display：block/
+inline-block/...；
+
+（3）使用图片：如果是内容固定不变情况下，使用将小于12px文字内容切出做图片，这样不影响兼容也不影响美观。
+
+## 五个li，宽高固定，竖直方向间距固定，要求水平方向间距由剩余宽度均分
+```
+ <style type="text/css">
+        ul {
+            width: 100%;
+            height: 210px;
+            display: flex;
+        }
+        
+        li {
+            width: 100%;
+            height: 100%;
+            list-style: none;
+            width: calc((100%-80px)/5);
+            margin-right: 20px;
+        }
+ 
+        li>div {
+            width: 100%;
+            height: 100%;
+        }
+ 
+        li:last-child {
+            margin: 0;
+        }
+    </style>
+```
+方法二：
+```
+ <style type="text/css">
+        ul {
+            width: 100%;
+            height: 210px;
+            background: orange;
+            display: flex
+        }
+ 
+        li {
+            width: 100%;
+            height: 100%;
+            list-style: none;
+            width: calc(100%/5);
+            margin-right: 20px;
+            box-sizing: border-box;
+ 
+        }
+ 
+        li>div {
+            width: 100%;
+            height: 100%;
+            background: red;
+        }
+ 
+        li:nth-last-child(1) {
+            margin-right: 0;
+        }
+    </style>
+```
 
 ## rem以及如何实现移动端适配
 rem是CSS3新增的一个相对单位（root em，根em），它的相对是相对于HTML根元素来说的，假如我们设置HTML根节点的字体大小fontSize为10px，那么在这个HTML里面所有设置rem单位的DOM元素的像素值为y(px)=x(rem) * 10

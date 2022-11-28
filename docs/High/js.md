@@ -941,6 +941,25 @@ console.log(square.area);
 // 输出 100
 ```
 
+## eval()
+eval() 函数会将传入的字符串当做 JavaScript 代码进行执行。
+
+eval() 是全局对象的一个函数属性。
+
+```
+console.log(eval('2 + 2'));
+// expected output: 4
+
+console.log(eval(new String('2 + 2')));
+// expected output: 2 + 2
+
+console.log(eval('2 + 2') === eval('4'));
+// expected output: true
+
+console.log(eval('2 + 2') === eval(new String('2 + 2')));
+// expected output: false
+```
+
 ## EventLoop
 每个宏任务之后，引擎会立即执行微任务队列中的所有任务，然后再执行其他的宏任务，或渲染，或进行其他任何操作。
 
