@@ -461,6 +461,30 @@ Redux 的优点如下：
 
 3. 计算出新树与老树的节点差异，然后做真实DOM的差异更新
 
+### react 的useState 钩子，底层是怎么实现
+用于定义组件的 State，对标到类组件中this.state的功能
+
+```
+function render() {
+  ReactDOM.render(<App />, document.getElementById("root"));
+}
+
+let state;
+
+function useState(initialState){
+  state = state || initialState;
+
+  function setState(newState) {
+    state = newState;
+    render();
+  }
+
+  return [state, setState];
+}
+
+render(); // 首次渲染
+```
+
 ### React componentWillMount 做 setState 会干嘛
 componentWillMount中若使用setState，其state会被合并到初始数据当中。
 

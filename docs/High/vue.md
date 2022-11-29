@@ -415,6 +415,11 @@ Action可以包含任何异步操作
 ### Methods
 Methods是挂载到vue实例所有方法的集合
 
+## vue 的computed 属性是怎么收集依赖的？
+我们都知道在Vue.js中对data对象数据的依赖收集在Object.defineProperty的get方法中
+
+每一个 computed ，都是一个Watcher ,这就意味着它可以像组件Watcher一样，去做一些依赖收集的工作，在这里着重提一点const computedWatcherOptions = { lazy: true },可以看到这个配置在创建Watcher时被导入，这个配置也是computed与watch的最大区别。
+
 ## ref，$refs，$el区别
 - ref ：是 元素的属性，用于设置在元素上
 - $refs ：获取页面中所有含有ref属性的DOM元素
