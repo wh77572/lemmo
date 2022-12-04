@@ -31,9 +31,9 @@ IE盒模型的width和height属性的范围包含了border、padding和content�
         意味着整个 HTML 文档就是一个大的 BFC 容器
 
 - float 的值不为 none
+- overflow 的值不为 visible
 - position 的值不为 static  或者 relative
 - display 的值为 table-cell、table-caption、inline-block、flex 和 inline-flex 中的其中一个
-- overflow 的值不为 visible
 
 ### BFC会与float元素相互覆盖吗
 BFC的区域不会与float的元素区域重叠计算BFC的高度时，浮动子元素也参与计算BFC
