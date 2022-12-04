@@ -87,8 +87,6 @@ React的主要功能如下：
 - 卸载阶段：这是 React 生命周期的最后一个阶段，组件实例在此阶段被销毁并从 DOM 中卸载(移除)。
 
 ### React组件的生命周期方法是什么？
-旧：
-
     getInitialState()： 用于指定 this.state 的默认值。它在创建组件之前执行。
     componentWillMount()： 在组件渲染到 DOM 之前执行。
     componentDidMount()： 当组件被渲染并放置在 DOM 上时执行。可以进行任何 DOM 查询操作。
@@ -98,9 +96,23 @@ React的主要功能如下：
     componentDidUpdate()： 渲染发生后立即调用。在此方法中，可以将任何要在更新发生后执行的代码放入其中。
     componentWillUnmount()： 在组件被永久销毁和卸载之前立即调用它。它用于清理内存空间，例如使定时器失效、事件监听器、取消网络请求或清理 DOM 元素。如果组件实例已卸载，则无法再次安装它。
 
-新：
+旧：
+- 挂载
+    - constructor
+    - componentWillMount
+    - render
+    - componentDidMount
+- 更新
+    - componentWillReceiveProps
+    - shouldComponentUpdate
+    - componentWillUpdate
+    - render
+    - componentDidUpdate
+- 卸载
+    - componentWillUnmount
 
-- 装载阶段 Mounting
+新：
+- 挂载阶段 Mounting
     - constructor
     - static getDerivedStateFromProps
     - ⚠️ UNSAFE_componentWillMount
@@ -292,8 +304,13 @@ useCallback 和 useMemo 都会在组件第一次渲染的时候执行，之后�
 
 在 Function 组件中， React 贴心的提供了 React.memo 这个 HOC（高阶组件），与 PureComponent 很相似，但是是专门给 Function Component 提供的，对 Class Component 并不适用。
 
-但是相比于 PureComponent ，React.memo() 可以支持指定一个参数，可以相当于 shouldComponentUpdate 的作用，因此 React.memo() 相对于 PureComponent 来说，用法更加方便。
+React.memo 是一个 高阶组件。所谓高阶组件，其实指的就是一个接收组件并返回一个组件的函数。
 
+React.memo 的作用是 缓存 组件，它会对传入的组件加上缓存功能生成一个新组件，然后返回这个新组件。
+
+React.memo 判断是否使用缓存，默认使用的是浅比较，也就是只比较第一层的 key。
+
+也就是拿到两参数：旧的和新的 props 对象，然后根据该方法的返回值来决定是否使用缓存。如果为真值，使用缓存，否则重新渲染并把新的渲染结果缓存下来。
 ```
 function MyComponent(props) {
   /* render using props */

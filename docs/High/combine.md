@@ -181,7 +181,45 @@ controller.abort()
  1. 根据需要采用服务端渲染方式：这种方式可以解决SPA应用首屏渲染慢的问题。
  1. 采用预渲染的方式加速静态页面：页面渲染的极致性能，比较适合静态页面。
 
-### tcp在哪一层？让你实现一个基于tcp协议之上的协议，你怎么实现。
+## tcp在哪一层？让你实现一个基于tcp协议之上的协议，你怎么实现
+TCP协议在传输层，IP在网络层，http在应用层
+
+### 创建TCP服务器端
+利用net.createServer(listener)创建一个TCP服务器
+```
+const net = require("net");
+// 通过net.createServer(listeber)即可创建一个TCP服务器
+const server = net.createServer(function (socket) {
+  // 新的连接
+  socket.on("data", function (data) {
+    socket.write("你好");
+  });
+  socket.on("end", function () {
+    console.log("连接断开");
+  });
+  socket.write("学习TCP");
+});
+// listener是连接事件connection的侦听器
+server.listen(8124, function () {
+  console.log("server bound");
+```
+
+### 创建客户端测试
+通过net模块自行构造客户端进行会话，测试上面构建的TCP服务代码如下：
+```
+const net = require("net");
+const client = net.connect({ port: 8124 }, function () {
+  //'connect' listener
+  console.log("client connected");
+  client.write("world!\r\n");
+});
+client.on("data", function (data) {
+  console.log(data.toString());
+  client.end();
+});
+client.on("end", function () {
+  console.log("client disconnected");
+```
 
 ## 前端安全
 
