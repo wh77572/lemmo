@@ -51,9 +51,9 @@ DNS( Domain Name System)是“域名系统”的英文缩写，是一种组织�
 
 ### 四次挥手
 - 第一次挥手： Client端发起挥手请求，向Server端发送标志位是FIN报文段，设置序列号seq，此时，Client端进入FIN_WAIT_1状态，这表示Client端没有数据要发送给Server端了。
-- 第二次分手：Server端收到了Client端发送的FIN报文段，向Client端返回一个标志位是ACK的报文段，ack设为seq加1，Client端进入FIN_WAIT_2状态，Server端告诉Client端，我确认并同意你的关闭请求。
-- 第三次分手： Server端向Client端发送标志位是FIN的报文段，请求关闭连接，同时Client端进入LAST_ACK状态。
-- 第四次分手 ： Client端收到Server端发送的FIN报文段，向Server端发送标志位是ACK的报文段，然后Client端进入TIME_WAIT状态。Server端收到Client端的ACK报文段以后，就关闭连接。此时，Client端等待2MSL的时间后依然没有收到回复，则证明Server端已正常关闭，那好，Client端也可以关闭连接了。
+- 第二次挥手：Server端收到了Client端发送的FIN报文段，向Client端返回一个标志位是ACK的报文段，ack设为seq加1，Client端进入FIN_WAIT_2状态，Server端告诉Client端，我确认并同意你的关闭请求。
+- 第三次挥手： Server端向Client端发送标志位是FIN的报文段，请求关闭连接，同时Client端进入LAST_ACK状态。
+- 第四次挥手 ： Client端收到Server端发送的FIN报文段，向Server端发送标志位是ACK的报文段，然后Client端进入TIME_WAIT状态。Server端收到Client端的ACK报文段以后，就关闭连接。此时，Client端等待2MSL的时间后依然没有收到回复，则证明Server端已正常关闭，那好，Client端也可以关闭连接了。
 
 ![图片wave](/assets/imgs/wave.png "wave")
 
@@ -1225,3 +1225,90 @@ function programing (函数式编程)
 
 - 缓求值（Lazy Evaluations）
 假如有一个函数g(f(x))，在常规的一旦知道x的值，则立即先求出f(x)的值，再将这个值代入到g()函数中。
+
+## 怎么做前端单元测试
+目前用的最多的前端单元测试框架主要有 Jest，一部分原因是因为 create-react-app 脚手架默认内置了Jest
+
+### 安装依赖
+```
+npm install --save-dev jest
+```
+
+### 不支持部分 ES6 语法
+解决办法：
+
+使用 babel 把 ES6 转成 ES5 语法，安装依赖：
+```
+npm install --save-dev @babel/core @babel/preset-env
+```
+根目录加入.babelrc
+```{   "presets": ["@babel/preset-env"] }```
+
+
+ts也差不多，只是插件不一样
+```
+安装依赖
+npm install --save-dev @babel/preset-typescript
+
+**改写 **.babelrc
+{   "presets": ["@babel/preset-env", "@babel/preset-typescript"] }
+```
+
+### 如何编写单元测试
+`./src/utils/fetchEnv.ts` 文件
+
+```
+/**
+ * 环境参数枚举
+ */
+ enum IEnvEnum {
+  DEV = 'dev', // 开发
+  TEST = 'test', // 测试
+  PRE = 'pre', // 预发
+  PROD = 'prod', // 生产
+}
+
+/**
+ * 根据链接获取当前环境参数
+ * @param {string?} url 资源链接
+ * @returns {IEnvEnum} 环境参数
+ */
+export function fetchEnv(url: string): IEnvEnum {
+  const envs = [IEnvEnum.DEV, IEnvEnum.TEST, IEnvEnum.PRE];
+
+  return envs.find((env) => url.includes(env)) || IEnvEnum.PROD;
+}
+```
+
+#### 编写对应的单元测试
+
+`./test/fetchEnv.test.ts` 文件
+
+```
+import { fetchEnv } from '../src/utils/fetchEnv';
+
+describe('fetchEnv', () => {
+  it ('判断是否 dev 环境', () => {
+    expect(fetchEnv('https://www.imooc.dev.com/')).toBe('dev');
+  });
+
+  it ('判断是否 test 环境', () => {
+    expect(fetchEnv('https://www.imooc.test.com/')).toBe('test');
+  });
+
+  it ('判断是否 pre 环境', () => {
+    expect(fetchEnv('https://www.imooc.pre.com/')).toBe('pre');
+  });
+
+  it ('判断是否 prod 环境', () => {
+    expect(fetchEnv('https://www.imooc.prod.com/')).toBe('prod');
+  });
+
+  it ('判断是否 prod 环境', () => {
+    expect(fetchEnv('https://www.imooc.com/')).toBe('prod');
+  });
+});
+```
+
+[参考文档](https://juejin.cn/post/7039108357554176037#heading-16)
+
