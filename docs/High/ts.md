@@ -322,6 +322,31 @@ type
     }
 ```
 
+## 理解Ts联合类型和交叉类型
+当我们把类型用&连接起来就是ts交叉类型，用|连接起来就是联合类型。
+
+### 联合类型
+```
+interface A {
+  name: string
+  age: number
+}
+
+interface B {
+  name: number
+  id: string
+}
+
+type Union = A | B;
+const c: Union
+```
+
+### 交叉类型
+```
+type Union = A & B;
+const c: Union
+```
+
 ## class interface function的区别
 interface -- 接口只声明成员方法，不做实现。
 
