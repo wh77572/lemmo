@@ -21,41 +21,25 @@ Less和Sass的主要不同就是他们的实现方式。
 1. Sass是基于Ruby的，是在服务器端处理的。
 1. 关于变量在Less和Sass中的唯一区别就是Less用@，Sass用$。
 
-## grid的所有属性
+## grid
+讲到布局，我们就会想到 flex 布局，甚至有人认为竟然有 flex 布局了，似乎没有必要去了解 Grid 布局。但 flex 布局和 Grid 布局有实质的区别，那就是 flex 布局是一维布局，Grid 布局是二维布局。flex 布局一次只能处理一个维度上的元素布局，一行或者一列。Grid 布局是将容器划分成了“行”和“列”，产生了一个个的网格，我们可以将网格元素放在与这些行和列相关的位置上，从而达到我们布局的目的。
+
+### grid的所有属性
 grid 是一个 CSS 简写属性，可以用来设置以下属性： 
 - 显式网格属性 grid-template-rows、grid-template-columns 和 grid-template-areas，
 - 隐式网格属性 grid-auto-rows、grid-auto-columns 和 grid-auto-flow， 间距属性 grid-column-gap (en-US) 和 grid-row-gap (en-US)。
 
-### 语法
 ```
-/* <'grid-template'> values */
-grid: none;
-grid: "a" 100px "b" 1fr;
-grid: [linename1] "a" 100px [linename2];
-grid: "a" 200px "b" min-content;
-grid: "a" minmax(100px, max-content) "b" 20%;
-grid: 100px / 200px;
-grid: minmax(400px, min-content) / repeat(auto-fill, 50px);
-
-/* <'grid-template-rows'> /
-   [ auto-flow && dense? ] <'grid-auto-columns'>? values */
-grid: 200px / auto-flow;
-grid: 30% / auto-flow dense;
-grid: repeat(3, [line1 line2 line3] 200px) / auto-flow 300px;
-grid: [line1] minmax(20em, max-content) / auto-flow dense 40%;
-
-/* [ auto-flow && dense? ] <'grid-auto-rows'>? /
-   <'grid-template-columns'> values */
-grid: auto-flow / 200px;
-grid: auto-flow dense / 30%;
-grid: auto-flow 300px / repeat(3, [line1 line2 line3] 200px);
-grid: auto-flow dense 40% / [line1] minmax(20em, max-content);
-
-/* Global values */
-grid: inherit;
-grid: initial;
-grid: unset;
+.wrapper {
+  margin: 50px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 200px);
+  grid-gap: 10px 20px;
+  grid-auto-rows: 50px;
+}
 ```
+
+[参考文档](https://juejin.cn/post/6854573220306255880#heading-17)
 
 ## position定位
 position属性用来指定一个元素在网页上的位置，一共有5种定位方式，即position属性主要有五个值。
