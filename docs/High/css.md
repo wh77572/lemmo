@@ -312,6 +312,46 @@ module.exports = {
 ## flex了解吗？讲一下
 Flex 是 Flexible Box 的缩写，意为"弹性布局"，用来为盒状模型提供最大的灵活性。
 
+在 flex 容器中默认存在两条轴，水平主轴(main axis) 和垂直的交叉轴(cross axis)
+
+在容器中的每个单元块被称之为 flex item，每个项目占据的主轴空间为 (main size), 占据的交叉轴的空间为 (cross size)。
+
+### 基本属性
+- 有下面六种属性可以设置在容器上，它们分别是：
+
+1. flex-direction  决定主轴的方向(即项目的排列方向)
+1. flex-wrap  决定容器内项目是否可换行
+1. flex-flow flex-direction 和 flex-wrap 的简写形式
+1. justify-content  定义了项目在主轴的对齐方式。
+1. align-items 定义了项目在交叉轴上的对齐方式
+1. align-content 定义了多根轴线的对齐方式，如果项目只有一根轴线，那么该属性将不起作用
+
+- 有六种属性可运用在 item 项目上：
+
+1. order  定义项目在容器中的排列顺序，数值越小，排列越靠前，默认值为 0         
+1. flex-grow  定义项目的放大比例
+1. flex-shrink
+定义了项目的缩小比例, 默认值: 1，即如果空间不足，该项目将缩小，负值对该属性无效。
+
+如果所有项目的 flex-shrink 属性都为 1，当空间不足时，都将等比例缩小。
+
+如果一个项目的 flex-shrink 属性为 0，其他项目都为 1，则空间不足时，前者不缩小。
+
+4. flex-basis   定义了在分配多余空间之前，项目占据的主轴空间，浏览器根据这个属性，计算主轴是否有多余空间
+
+5. flex  flex-grow, flex-shrink 和 flex-basis的简写
+有关快捷值：auto (1 1 auto) 和 none (0 0 auto)
+
+6. align-self  允许单个项目有与其他项目不一样的对齐方式
+
+### box-sizing 属性
+盒模型可以通过 box-sizing 来设置：
+
+语法：`box-sizing: content-box | border-box | inherit;`
+
+- content-box：标准盒模型，CSS 定义的宽高只是 content 内容区的宽高。盒子实际宽高是内容区、内边距与边框的尺寸之和。内边距 padding 和边框 border 的尺寸改变不会影响内容区的宽高，但会影响盒子的总尺寸。
+- border-box：IE盒模型，CSS 定义的宽高包括了 content，padding 和 border。内边距 padding 和边框 border 的尺寸改变会影响内容区的宽高，但不会影响盒子的总尺寸。
+
 ### flex:1;代表什么意思
 flex 属性是 flex-grow, flex-shrink 和 flex-basis 的简写，默认值为 0 1 auto。后两个属性可选。
 
