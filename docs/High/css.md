@@ -106,6 +106,7 @@ inline-block/...；
 （3）使用图片：如果是内容固定不变情况下，使用将小于12px文字内容切出做图片，这样不影响兼容也不影响美观。
 
 ## 五个li，宽高固定，竖直方向间距固定，要求水平方向间距由剩余宽度均分
+- css3
 ```
  <style type="text/css">
         ul {
@@ -163,6 +164,12 @@ inline-block/...；
         }
     </style>
 ```
+
+- 利用flex属性
+`justify-content: space-between | space-around
+`
+- js
+就是用js计算宽度，这个没什么好说的
 
 ## rem以及如何实现移动端适配
 rem是CSS3新增的一个相对单位（root em，根em），它的相对是相对于HTML根元素来说的，假如我们设置HTML根节点的字体大小fontSize为10px，那么在这个HTML里面所有设置rem单位的DOM元素的像素值为y(px)=x(rem) * 10
