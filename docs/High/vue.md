@@ -420,6 +420,10 @@ Methods是挂载到vue实例所有方法的集合
 
 每一个 computed ，都是一个Watcher ,这就意味着它可以像组件Watcher一样，去做一些依赖收集的工作，在这里着重提一点const computedWatcherOptions = { lazy: true },可以看到这个配置在创建Watcher时被导入，这个配置也是computed与watch的最大区别。
 
+## vue 中 computed 的原理是什么
+
+[直达](https://q.shanyue.tech/fe/vue/91.html#vue-%E4%B8%AD-computed-%E7%9A%84%E5%8E%9F%E7%90%86%E6%98%AF%E4%BB%80%E4%B9%88)
+
 ## ref，$refs，$el区别
 - ref ：是 元素的属性，用于设置在元素上
 - $refs ：获取页面中所有含有ref属性的DOM元素
