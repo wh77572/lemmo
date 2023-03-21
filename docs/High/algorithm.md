@@ -19,6 +19,62 @@ const hasPathSum = (root, sum) => {
 }
 ```
 
+## 写一个最多能并发执行n个promise的队列
+```
+function Scheduler(){
+    this.list=[]
+    this.add=function(promiseCreator){
+       this.list.push(promiseCreator)
+    }
+    
+    this.maxCount=2;
+ 
+    
+    var tempRunIndex=0;
+ 
+    this.taskStart=function(){
+       for(var i =0 ;i<this.maxCount;i++){
+           request.bind(this)()
+       }
+    }
+ 
+    function request(){
+      
+        if(!this.list || !this.list.length || tempRunIndex>=this.maxCount){
+            return
+        }
+       
+        tempRunIndex++
+        this.list.shift()().then(()=>{
+            tempRunIndex--
+            request.bind(this)()
+        })
+    }
+}
+ 
+function timeout(time){
+    return new Promise(resolve=>{
+        setTimeout(resolve,time)
+    })
+}
+ 
+var scheduler = new Scheduler()
+ 
+function addTask(time,order){
+    scheduler.add(()=>timeout(time).then(()=>console.log(order)))
+}
+ 
+ 
+addTask(1000,1)
+addTask(500,2)
+addTask(300,3)
+addTask(400,4)
+ 
+scheduler.taskStart()
+```
+
+[处理并发](https://libin1991.github.io/2019/02/06/%E4%B8%80%E9%81%93%E8%B5%8B%E5%80%BC%E9%9D%A2%E8%AF%95%E9%A2%98%E5%BC%95%E5%8F%91%E7%9A%84%E6%80%9D%E8%80%833%E3%80%90%E5%B9%B6%E5%8F%91%E6%95%B0%E6%8E%A7%E5%88%B6%E3%80%91/)
+
 ## 实现翻转单项链表
 ```
 var reverseList = function (head) {

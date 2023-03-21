@@ -385,215 +385,33 @@ window.JSBridge = {
 ```
 
 [参考链接](https://juejin.cn/post/6844903585268891662#heading-5)
-
-# js的设计模式
-------------
-设计模式可以被分为三大类：创建、结构、行为范例
-
-举例部分常用模式
-
-## 创建范例
-    创建范例包括不同的创建对象的机制。
-
-### 单例模式
-一个类只有一个实例，并提供一个访问它的全局访问点。
-
-```
-class LoginForm {
-    constructor() {
-        this.state = 'hide'
-    }
-    show() {
-        if (this.state === 'show') {
-            alert('已经显示')
-            return
-        }
-        this.state = 'show'
-        console.log('登录框显示成功')
-    }
-    hide() {
-        if (this.state === 'hide') {
-            alert('已经隐藏')
-            return
-        }
-        this.state = 'hide'
-        console.log('登录框隐藏成功')
-    }
- }
- LoginForm.getInstance = (function () {
-     let instance
-     return function () {
-        if (!instance) {
-            instance = new LoginForm()
-        }
-        return instance
-     }
- })()
-
-let obj1 = LoginForm.getInstance()
-obj1.show()
-
-let obj2 = LoginForm.getInstance()
-obj2.hide()
-
-console.log(obj1 === obj2)
-```
-#### 优点
-
-- 划分命名空间，减少全局变量
-- 增强模块性，把自己的代码组织在一个全局变量名下，放在单一位置，便于维护
-- 且只会实例化一次。简化了代码的调试和维护
-
-#### 缺点
-
-由于单例模式提供的是一种单点访问，所以它有可能导致模块间的强耦合 从而不利于单元测试。无法单独测试一个调用了来自单例的方法的类，而只能把它与那个单例作为一个单元一起测试。
-
-### 工厂方法
-工厂模式定义一个用于创建对象的接口，这个接口由子类决定实例化哪一个类。该模式使一个类的实例化延迟到了子类。而子类可以重写接口方法以便创建的时候指定自己的对象类型。
-
-```
-class Product {
-    constructor(name) {
-        this.name = name
-    }
-    init() {
-        console.log('init')
-    }
-    fun() {
-        console.log('fun')
-    }
-}
-
-class Factory {
-    create(name) {
-        return new Product(name)
-    }
-}
-
-// use
-let factory = new Factory()
-let p = factory.create('p1')
-p.init()
-p.fun()
-```
-
-#### 优点
-
-- 创建对象的过程可能很复杂，但我们只需要关心创建结果。
-- 构造函数和创建者分离, 符合“开闭原则”
-- 一个调用者想创建一个对象，只要知道其名称就可以了。
-- 扩展性高，如果想增加一个产品，只要扩展一个工厂类就可以。
-
-#### 缺点
-
-添加新产品时，需要编写新的具体产品类,一定程度上增加了系统的复杂度
-考虑到系统的可扩展性，需要引入抽象层，在客户端代码中均使用抽象层进行定义，增加了系统的抽象性和理解难度
-
-## 结构范例
-   结构范例将对象和类组合成更大的结构。
-
-### 装饰
-装饰通过增加一个修饰对象来包裹原来的对象，从而给原来的对象添加新的行为。如果你熟悉React或者高阶组件（HOC），你内心的小铃铛可能会叮当一下。
-
-从技术上讲，React中的组件是函数而不是对象。但如果你仔细思索React上下文（React Context）或者Memo是怎么运作的，你会发现我们将组件作为子组件传入HOC后，子组件而可以访问某些功能。
-
-在下面的例子里中ContextProvider组件接受子组件作为prop：
-```
-import { useState } from 'react'
-import Context from './Context'
-
-const ContextProvider: React.FC = ({children}) => {
-
-    const [darkModeOn, setDarkModeOn] = useState(true)
-    const [englishLanguage, setEnglishLanguage] = useState(true)
-
-    return (
-        <Context.Provider value={{
-            darkModeOn,
-            setDarkModeOn,
-            englishLanguage,
-            setEnglishLanguage
-        }} >
-            {children}
-        </Context.Provider>
-    )
-}
-
-export default ContextProvider
-```
-然后我们包裹整个应用：
-
-```
-export default function App() {
-  return (
-    <ContextProvider>
-      <Router>
-
-        <ErrorBoundary>
-          <Suspense fallback={<></>}>
-            <Header />
-          </Suspense>
-
-          <Routes>
-              <Route path='/' element={<Suspense fallback={<></>}><AboutPage /></Suspense>}/>
-
-              <Route path='/projects' element={<Suspense fallback={<></>}><ProjectsPage /></Suspense>}/>
-
-              <Route path='/projects/helpr' element={<Suspense fallback={<></>}><HelprProject /></Suspense>}/>
-
-              <Route path='/projects/myWebsite' element={<Suspense fallback={<></>}><MyWebsiteProject /></Suspense>}/>
-
-              <Route path='/projects/mixr' element={<Suspense fallback={<></>}><MixrProject /></Suspense>}/>
-
-              <Route path='/projects/shortr' element={<Suspense fallback={<></>}><ShortrProject /></Suspense>}/>
-
-              <Route path='/curriculum' element={<Suspense fallback={<></>}><CurriculumPage /></Suspense>}/>
-
-              <Route path='/blog' element={<Suspense fallback={<></>}><BlogPage /></Suspense>}/>
-
-              <Route path='/contact' element={<Suspense fallback={<></>}><ContactPage /></Suspense>}/>
-          </Routes>
-        </ErrorBoundary>
-
-      </Router>
-    </ContextProvider>
-  )
-}
-```
-接着，我们使用useContext钩子，使得应用内所有组件都可以获得定义在Context的状态（state）：
-
-```
-const AboutPage: React.FC = () => {
-
-    const { darkModeOn, englishLanguage } = useContext(Context)
-    
-    return (...)
-}
-
-export default AboutPage
-```
-这个例子可能不是书的作者在写这个模式时想到的确切实现，但我相信想法是一样的：把一个对象放在另一个对象中，这样它就可以访问某些功能。;)
-
-## 行为范式
-   行为范式控制不同对象之间的通讯。
    
-### 观察者
-观察者模式允许你定义一个订阅机制来通知多个对象它们正在观察的对象发生的任何事件。基本上，这就像在给定对象上有一个事件侦听器，当该对象执行我们正在侦听的操作时，我们会采取一些行动。
 
-React的useEffect钩子就是一个很好的例子。 useEffect在我们声明的那一刻执行给定的函数。
+## 你提到了 map，讲讲和object有什么区别?
 
-钩子分为两个主要部分：可执行函数和依赖数组。如果数组为空，如下例所示，每次渲染组件时都会执行该函数。
+### 什么是Map
+Map是一种数据结构（它很特别，是一种抽象的数据结构类型），数据一对对进行存储，其中包含键以及映射到该键的值。并且由于键的唯一性，因此不存在重复的键值对。
+
+例如：{(1, "smile"), (2, "cry"), (42, "happy")}
+
+### 什么是Object
+JavaScript中的常规对象是一种字典类型的数据结构——这意味着它依然遵循与Map类型相同键值对的存储结构。Object中的key，或者我们可以称之为属性，同样是独一无二的并且对应着一个单独的value。
+
+另外，JavaScript中的Object拥有内置原型(prototype)。需要注意的是，JavaScript中几乎所有对象都是Object实例，包括Map。
+
+例如：{1: 'smile', 2: 'cry', 42: 'happy'}
+
+### 区别
+- 键：Object遵循普通的字典规则，键必须是单一类型，并且只能是整数、字符串或是Symbol类型。但在Map中，key可以为任意数据类型（Object, Array等）。（你可以尝试将一个对象设置为一个Object的key，看看最终的数据结构）
+- 元素顺序：Map会保留所有元素的顺序，而Object并不会保证属性的顺序。（如有疑问可参考：链接）
+- 继承：Map是Object的实例对象，而Object显然不可能是Map的实例对象。
 
 ```
-useEffect(() => { console.log('The component has rendered') }, [])
+var map = new Map([[1,2],[3,4]]);
+console.log(map instanceof Object); //true
+var obj = new Object();
+console.log(obj instanceof Map); //false
 ```
-如果在依赖数组中声明任何变量，则该函数将仅在这些变量发生变化时执行。
-
-```  
-useEffect(() => { console.log('var1 has changed') }, [var1])
-```
-也可以将JavaScript的事件监听器视为观察者模式。另外，响应式编程和库如RxJS，用来处理异步信息和事件的方法也是这个模式。
-   
 
 ## CSR 和 SSR 的区别
 
@@ -894,73 +712,6 @@ Array.of(1,2,3,4); // [ 1, 2, 3, 4 ]
 Array.from({0: "zero", 1: "one", length: 2}); // [ "zero", "one" ]
 ```
 
-## 面向对象
-
-### 面向对象的三大特性
-面向对象的三个基本特征是：封装、继承、多态
-
-- 封装
-封装最好理解了。封装是面向对象的特征之一，是对象和类概念的主要特性。封装，也就是把客观事物封装成抽象的类，并且类可以把自己的数据和方法只让可信的类或者对象操作，对不可信的进行信息隐藏。
-
-- 继承
-继承是指这样一种能力：它可以使用现有类的所有功能，并在无需重新编写原来的类的情况下对这些功能进行扩展。通过继承创建的新类称为“子类”或“派生类”，被继承的类称为“基类”、“父类”或“超类”。
-
-要实现继承，可以通过“继承”（Inheritance）和“组合”（Composition）来实现。
-
-- 多态性
-多态性（polymorphisn）是允许你将父对象设置成为和一个或更多的他的子对象相等的技术，赋值之后，父对象就可以根据当前赋值给它的子对象的特性以不同的方式运作。简单的说，就是一句话：允许将子类类型的指针赋值给父类类型的指针。
-
-实现多态，有两种方式，覆盖和重载。覆盖和重载的区别在于，覆盖在运行时决定，重载是在编译时决定。并且覆盖和重载的机制不同，例如在 Java 中，重载方法的签名必须不同于原先方法的，但对于覆盖签名必须相同。
-
-### 面向对象的五大基本原则
-1. 单一职责原则（SRP）
-其核心思想为：一个类，最好只做一件事，只有一个引起它的变化。
-
-一个类，最好有且仅有一个引起它变化的原因。
-
-举个栗子，职员类里包括了普通员工、经理、老板，那类中势必需要用if else来区分判断，而且无论是这三种职员的需求发生变化，都会影响到整个职员类。
-
-按照“单一职责原则”，将普通员工、经理、老板分别建一个类，既不用if else加以区分，也不会在修改某个职员类别的时候影响另一个。
-
-2. 开放封闭原则（OCP）
-其核心思想是：软件实体应该是可扩展的，而不可修改的。
-
-一个类，可以扩展（添加属性和功能），但是不要修改已经写好的属性和方法。
-
-实现开开放封闭原则的核心思想就是对抽象编程，而不对具体编程，因为抽象相对稳定。
-打个简单的比方，X的大舅二舅都是他舅，是有血缘关系的舅舅，如果突然冒出来一个跟他有血缘关系的三舅，那也是他舅舅。同时也不能改变他大舅和二舅的亲缘关系。
-
-3.里氏替换原则（LSP)
-其核心思想是：子类必须能够替换其基类。
-
-类A是类B的父类，那么在进行调用的时候，类A可以引用类B，但是反过来不行。
-
-其实可以粗糙地理解为，类A就是对外提供一个接口，具体的实现在类B中。
-
-实现的方法是面向接口编程：将公共部分抽象为基类接口或抽象类，通过Extract Abstract Class，在子类中通过覆写父类的方法实现新的方式支持同样的职责。
-
-也就是说，其实里氏替换原则是继承和多态的综合体现。
-
-4. 依赖倒置原则（DIP)
-其核心思想是：依赖于抽象。具体而言就是高层模块不依赖于底层模块，二者都同依赖于抽象；抽象不依赖于具体，具体依赖于抽象。
-
-在对客观事物抽象成逻辑实体时，可以先思考，同类事物的共性是什么，将这个共性作为这类事物的“高层模块”，若干不同的客观事物作为“底层模块”在依赖”高层“之后，对共性进行特定描述。
-
-举个栗子，苹果跟西瓜都是水果，水果的共同属性是水分、糖分。在这里，”水果“作为高层模块，其属性可以在描述“苹果”和“西瓜”的时候使用，所以“苹果”“西瓜”在此是“底层模块”。
-
-5. 接口隔离原则
-其核心思想是：使用多个小的专门的接口，而不要使用一个大的总接口。
-
-接口中定义属性和需要子类实现的方法，实现类必须完全实现接口的所有方法、属性。为什么要接口隔离呢？目的有二：
-
-- 避免引用接口的类，需要实现其实用不到的接口方法、属性。
-- 避免当接口修改的时候，有一连串的实现类需要更改。
-
-分离的手段主要有以下两种：1、委托分离，通过增加一个新的类型来委托客户的请求，隔离客户和接口的直接依赖，但是会增加系统的开销。2、多重继承分离，通过接口多继承来实现客户的需求，这种方式是较好的。
-
-- 委托分离，不直接使用原先的接口，可以用另外增加一个新的接口或类来实现需求。
-- 多重继承分离，JDK源码、Spring框架使用了这种方式，后续的JDK源码解析系列会提及，好奇的朋友可以查看集合类的结构。
-
 ## 同源策略
 同源是指 同协议 、同域名、同端口。
 ### 跨域有哪些方法？
@@ -1065,6 +816,46 @@ server {
 6. window.name + iframe
 同域名情况下，可以通信
 
+### 跨域，相关的几个请求头的含义。
+
+| 请求头| 响应头 |
+|:----------- | :-----------|
+|Origin	                        | Access-Control-Allow-Credentials|
+|Access-Control-Request-Headers	| Access-Control-Allow-Headers|
+|Access-Control-Request-Method	| Access-Control-Allow-Methods|
+|                                | Access-Control-Allow-Origin|
+|                                | Access-Control-Expose-Headers|
+|                                | Access-Control-Max-Age|
+
+
+#### 请求头：
+Origin：当前请求源，和响应头里的Access-Control-Allow-Origin 对标， 是否允许当前源访问，Origin是不可修改的
+
+Access-Control-Request-Headers：本次真实请求的额外请求头，和响应头里的Access-Control-Allow-Headers对标，是否允许真实请求的请求头
+
+Access-Control-Request-Method：本次真实请求的额外方法，和响应头里的Access-Control-Allow-Methods对标，是否允许真实请求使用的请求方法
+
+#### 响应头
+- Access-Control-Allow-Credentials：
+
+这里的Credentials（凭证）其意包括：Cookie ，授权标头或 TLS 客户端证书，默认CORS请求是不带Cookies的，这与JSONP不同，JSONP每次请求都携带Cookies的，当然跨域允许带Cookies会导致CSRF漏洞。如果非要跨域传递Cookies，web端需要给ajax设置withCredentials为true，同时，服务器也必须使用Access-Control-Allow-Credentials头响应。此响应头true意味着服务器允许cookies（或其他用户凭据）包含在跨域请求中。另外，简单的GET请求是不预检的，即使请求的时候设置widthCrenditials为true，如果响应头不带Access-Control-Allow-Credentials，则会导致整个响应资源被浏览器忽略。
+
+- Access-Control-Allow-Headers
+- Access-Control-Allow-Methods
+- Access-Control-Allow-Origin
+- Access-Control-Expose-Headers：
+
+在CORS中，默认的，只允许客户端读取下面六个响应头（在axios响应对象的headers里能看到）：
+
+    Cache-Control
+    Content-Language
+    Content-Type
+    Expires
+    Last-Modified
+    Pragma
+    
+[参考资料 github 62](https://github.com/amandakelake/blog/issues/62)
+
 ### document.domain的限制是啥？
 document.domain这个方法使用极其简单，但是也有较大的限制，主要用于主域相同的域之间的数据通信。
 
@@ -1116,6 +907,53 @@ document.domain这个方法使用极其简单，但是也有较大的限制，�
 1. 可能a.com的一段JavaScript脚本，在b.com未曾加载此脚本时，也可以随意涂改b.com的页面。
 1. 在浏览器中同时打开某电商网站（域名为b.com），同时在打开另一个网站(a.com)，那么在a.com域名下的脚本可以读取b.com下的Cookie，如果Cookie中包含隐私数据，后果不堪设想。
 1. 因为可以随意读取任意域名下的Cookie数据，很容易发起CSRF攻击。
+
+## 你提到了 requestAnimationFrame，讲讲和setlnterval的区别?
+与 setTimeout、setInterval 不同，requestAnimationFrame 不需要设置时间间隔，这有什么好处呢？
+
+计时器一直是 JavaScript 动画的核心技术，而编写动画循环的核心是要知道延迟时间多长合适。一方面循环间隔必须足够短，这样才能让不同的动画效果显得平滑顺畅，另一方面循环间隔要足够的长，这样才能保证浏览器有能力渲染产生的变化。
+大多数电脑显示器的刷新频率是60Hz，大概相当于每秒重绘60次。大多数浏览器都会对重绘操作加以限制，不会超出显示器的重绘频率。
+
+而 setTimeout 和 setInterval 的缺点是他们都不够精确。它们内在的运行机制决定了时间间隔参数实际上只是指定了把动画代码添加到浏览器 UI 线程队列中等待执行的时间，如果队列中已经加入了其他任务，那么动画的执行要等前面的任务结束之后才会执行。
+
+requestAnimationFrame采用的是系统时间间隔，保证了最佳绘制效率。不会因间隔时间过短，造成过度绘制，增加开销；也不会因时间间隔太长，造成动画卡顿。它能够让各种网页动画有一个统一的刷新机制，从而节省系统资源，提高系统性能，改善视觉效果。
+
+### 特点
+1. requestAnimationFrame 会把每一帧中的所有 DOM 操作集中起来，在一次重绘或回流中就完成，并且重绘或回流的时间间隔紧紧跟随浏览器的刷新频率。
+1. 在隐藏或不可见的元素中，requsetAnimationFrame 将不会进行重绘或回流，这就意味着更少的 CPU、GPU 和内存使用量。
+1. requestAnimationFrame是浏览器专门提供的 api，在运行时浏览器会自动优化方法的调用，并且页面不是激活状态下，动画会暂停执行，有效节省 CPU 开销。
+
+### 使用
+- requestAnimationFrame 使用一个回调函数作为参数，这个回调函数会在浏览器重绘之前调用。他返回一个整数，标识定时器的编号，这个值可以传递给 cancelAnimationFrame用于取消这个函数的执行。
+
+```
+const requestId = requestAnimationFrame(callback);
+
+//控制台输出1和0
+var timer = requestAnimationFrame(function(){
+    console.log(0);
+}); 
+console.log(timer);//1
+```
+
+- cancelAnimationFrame方法用于取消定时器
+
+```
+//控制台什么都不输出
+var timer = requestAnimationFrame(function(){
+    console.log(0);
+}); 
+cancelAnimationFrame(timer);
+```
+
+- 也可以直接使用返回值进行取消
+
+```
+var timer = requestAnimationFrame(function(){
+    console.log(0);
+}); 
+cancelAnimationFrame(1);
+```
 
 ## es6如何转换es5？
 转换过程分为三步：
@@ -1347,4 +1185,280 @@ describe('fetchEnv', () => {
 ```
 
 [参考文档](https://juejin.cn/post/7039108357554176037#heading-16)
+
+# js的设计模式
+------------
+设计模式可以被分为三大类：创建、结构、行为范例
+
+举例部分常用模式
+
+## 创建范例
+    创建范例包括不同的创建对象的机制。
+
+### 单例模式
+一个类只有一个实例，并提供一个访问它的全局访问点。
+
+```
+class LoginForm {
+    constructor() {
+        this.state = 'hide'
+    }
+    show() {
+        if (this.state === 'show') {
+            alert('已经显示')
+            return
+        }
+        this.state = 'show'
+        console.log('登录框显示成功')
+    }
+    hide() {
+        if (this.state === 'hide') {
+            alert('已经隐藏')
+            return
+        }
+        this.state = 'hide'
+        console.log('登录框隐藏成功')
+    }
+ }
+ LoginForm.getInstance = (function () {
+     let instance
+     return function () {
+        if (!instance) {
+            instance = new LoginForm()
+        }
+        return instance
+     }
+ })()
+
+let obj1 = LoginForm.getInstance()
+obj1.show()
+
+let obj2 = LoginForm.getInstance()
+obj2.hide()
+
+console.log(obj1 === obj2)
+```
+#### 优点
+
+- 划分命名空间，减少全局变量
+- 增强模块性，把自己的代码组织在一个全局变量名下，放在单一位置，便于维护
+- 且只会实例化一次。简化了代码的调试和维护
+
+#### 缺点
+
+由于单例模式提供的是一种单点访问，所以它有可能导致模块间的强耦合 从而不利于单元测试。无法单独测试一个调用了来自单例的方法的类，而只能把它与那个单例作为一个单元一起测试。
+
+### 工厂方法
+工厂模式定义一个用于创建对象的接口，这个接口由子类决定实例化哪一个类。该模式使一个类的实例化延迟到了子类。而子类可以重写接口方法以便创建的时候指定自己的对象类型。
+
+```
+class Product {
+    constructor(name) {
+        this.name = name
+    }
+    init() {
+        console.log('init')
+    }
+    fun() {
+        console.log('fun')
+    }
+}
+
+class Factory {
+    create(name) {
+        return new Product(name)
+    }
+}
+
+// use
+let factory = new Factory()
+let p = factory.create('p1')
+p.init()
+p.fun()
+```
+
+#### 优点
+
+- 创建对象的过程可能很复杂，但我们只需要关心创建结果。
+- 构造函数和创建者分离, 符合“开闭原则”
+- 一个调用者想创建一个对象，只要知道其名称就可以了。
+- 扩展性高，如果想增加一个产品，只要扩展一个工厂类就可以。
+
+#### 缺点
+
+添加新产品时，需要编写新的具体产品类,一定程度上增加了系统的复杂度
+考虑到系统的可扩展性，需要引入抽象层，在客户端代码中均使用抽象层进行定义，增加了系统的抽象性和理解难度
+
+## 结构范例
+   结构范例将对象和类组合成更大的结构。
+
+### 装饰
+装饰通过增加一个修饰对象来包裹原来的对象，从而给原来的对象添加新的行为。如果你熟悉React或者高阶组件（HOC），你内心的小铃铛可能会叮当一下。
+
+从技术上讲，React中的组件是函数而不是对象。但如果你仔细思索React上下文（React Context）或者Memo是怎么运作的，你会发现我们将组件作为子组件传入HOC后，子组件而可以访问某些功能。
+
+在下面的例子里中ContextProvider组件接受子组件作为prop：
+```
+import { useState } from 'react'
+import Context from './Context'
+
+const ContextProvider: React.FC = ({children}) => {
+
+    const [darkModeOn, setDarkModeOn] = useState(true)
+    const [englishLanguage, setEnglishLanguage] = useState(true)
+
+    return (
+        <Context.Provider value={{
+            darkModeOn,
+            setDarkModeOn,
+            englishLanguage,
+            setEnglishLanguage
+        }} >
+            {children}
+        </Context.Provider>
+    )
+}
+
+export default ContextProvider
+```
+然后我们包裹整个应用：
+
+```
+export default function App() {
+  return (
+    <ContextProvider>
+      <Router>
+
+        <ErrorBoundary>
+          <Suspense fallback={<></>}>
+            <Header />
+          </Suspense>
+
+          <Routes>
+              <Route path='/' element={<Suspense fallback={<></>}><AboutPage /></Suspense>}/>
+
+              <Route path='/projects' element={<Suspense fallback={<></>}><ProjectsPage /></Suspense>}/>
+
+              <Route path='/projects/helpr' element={<Suspense fallback={<></>}><HelprProject /></Suspense>}/>
+
+              <Route path='/projects/myWebsite' element={<Suspense fallback={<></>}><MyWebsiteProject /></Suspense>}/>
+
+              <Route path='/projects/mixr' element={<Suspense fallback={<></>}><MixrProject /></Suspense>}/>
+
+              <Route path='/projects/shortr' element={<Suspense fallback={<></>}><ShortrProject /></Suspense>}/>
+
+              <Route path='/curriculum' element={<Suspense fallback={<></>}><CurriculumPage /></Suspense>}/>
+
+              <Route path='/blog' element={<Suspense fallback={<></>}><BlogPage /></Suspense>}/>
+
+              <Route path='/contact' element={<Suspense fallback={<></>}><ContactPage /></Suspense>}/>
+          </Routes>
+        </ErrorBoundary>
+
+      </Router>
+    </ContextProvider>
+  )
+}
+```
+接着，我们使用useContext钩子，使得应用内所有组件都可以获得定义在Context的状态（state）：
+
+```
+const AboutPage: React.FC = () => {
+
+    const { darkModeOn, englishLanguage } = useContext(Context)
+    
+    return (...)
+}
+
+export default AboutPage
+```
+这个例子可能不是书的作者在写这个模式时想到的确切实现，但我相信想法是一样的：把一个对象放在另一个对象中，这样它就可以访问某些功能。;)
+
+## 行为范式
+   行为范式控制不同对象之间的通讯。
+   
+### 观察者
+观察者模式允许你定义一个订阅机制来通知多个对象它们正在观察的对象发生的任何事件。基本上，这就像在给定对象上有一个事件侦听器，当该对象执行我们正在侦听的操作时，我们会采取一些行动。
+
+React的useEffect钩子就是一个很好的例子。 useEffect在我们声明的那一刻执行给定的函数。
+
+钩子分为两个主要部分：可执行函数和依赖数组。如果数组为空，如下例所示，每次渲染组件时都会执行该函数。
+
+```
+useEffect(() => { console.log('The component has rendered') }, [])
+```
+如果在依赖数组中声明任何变量，则该函数将仅在这些变量发生变化时执行。
+
+```  
+useEffect(() => { console.log('var1 has changed') }, [var1])
+```
+也可以将JavaScript的事件监听器视为观察者模式。另外，响应式编程和库如RxJS，用来处理异步信息和事件的方法也是这个模式。
+   
+
+## 面向对象
+
+### 面向对象的三大特性
+面向对象的三个基本特征是：封装、继承、多态
+
+- 封装
+封装最好理解了。封装是面向对象的特征之一，是对象和类概念的主要特性。封装，也就是把客观事物封装成抽象的类，并且类可以把自己的数据和方法只让可信的类或者对象操作，对不可信的进行信息隐藏。
+
+- 继承
+继承是指这样一种能力：它可以使用现有类的所有功能，并在无需重新编写原来的类的情况下对这些功能进行扩展。通过继承创建的新类称为“子类”或“派生类”，被继承的类称为“基类”、“父类”或“超类”。
+
+要实现继承，可以通过“继承”（Inheritance）和“组合”（Composition）来实现。
+
+- 多态性
+多态性（polymorphisn）是允许你将父对象设置成为和一个或更多的他的子对象相等的技术，赋值之后，父对象就可以根据当前赋值给它的子对象的特性以不同的方式运作。简单的说，就是一句话：允许将子类类型的指针赋值给父类类型的指针。
+
+实现多态，有两种方式，覆盖和重载。覆盖和重载的区别在于，覆盖在运行时决定，重载是在编译时决定。并且覆盖和重载的机制不同，例如在 Java 中，重载方法的签名必须不同于原先方法的，但对于覆盖签名必须相同。
+
+### 面向对象的五大基本原则
+1. 单一职责原则（SRP）
+其核心思想为：一个类，最好只做一件事，只有一个引起它的变化。
+
+一个类，最好有且仅有一个引起它变化的原因。
+
+举个栗子，职员类里包括了普通员工、经理、老板，那类中势必需要用if else来区分判断，而且无论是这三种职员的需求发生变化，都会影响到整个职员类。
+
+按照“单一职责原则”，将普通员工、经理、老板分别建一个类，既不用if else加以区分，也不会在修改某个职员类别的时候影响另一个。
+
+2. 开放封闭原则（OCP）
+其核心思想是：软件实体应该是可扩展的，而不可修改的。
+
+一个类，可以扩展（添加属性和功能），但是不要修改已经写好的属性和方法。
+
+实现开开放封闭原则的核心思想就是对抽象编程，而不对具体编程，因为抽象相对稳定。
+打个简单的比方，X的大舅二舅都是他舅，是有血缘关系的舅舅，如果突然冒出来一个跟他有血缘关系的三舅，那也是他舅舅。同时也不能改变他大舅和二舅的亲缘关系。
+
+3.里氏替换原则（LSP)
+其核心思想是：子类必须能够替换其基类。
+
+类A是类B的父类，那么在进行调用的时候，类A可以引用类B，但是反过来不行。
+
+其实可以粗糙地理解为，类A就是对外提供一个接口，具体的实现在类B中。
+
+实现的方法是面向接口编程：将公共部分抽象为基类接口或抽象类，通过Extract Abstract Class，在子类中通过覆写父类的方法实现新的方式支持同样的职责。
+
+也就是说，其实里氏替换原则是继承和多态的综合体现。
+
+4. 依赖倒置原则（DIP)
+其核心思想是：依赖于抽象。具体而言就是高层模块不依赖于底层模块，二者都同依赖于抽象；抽象不依赖于具体，具体依赖于抽象。
+
+在对客观事物抽象成逻辑实体时，可以先思考，同类事物的共性是什么，将这个共性作为这类事物的“高层模块”，若干不同的客观事物作为“底层模块”在依赖”高层“之后，对共性进行特定描述。
+
+举个栗子，苹果跟西瓜都是水果，水果的共同属性是水分、糖分。在这里，”水果“作为高层模块，其属性可以在描述“苹果”和“西瓜”的时候使用，所以“苹果”“西瓜”在此是“底层模块”。
+
+5. 接口隔离原则
+其核心思想是：使用多个小的专门的接口，而不要使用一个大的总接口。
+
+接口中定义属性和需要子类实现的方法，实现类必须完全实现接口的所有方法、属性。为什么要接口隔离呢？目的有二：
+
+- 避免引用接口的类，需要实现其实用不到的接口方法、属性。
+- 避免当接口修改的时候，有一连串的实现类需要更改。
+
+分离的手段主要有以下两种：1、委托分离，通过增加一个新的类型来委托客户的请求，隔离客户和接口的直接依赖，但是会增加系统的开销。2、多重继承分离，通过接口多继承来实现客户的需求，这种方式是较好的。
+
+- 委托分离，不直接使用原先的接口，可以用另外增加一个新的接口或类来实现需求。
+- 多重继承分离，JDK源码、Spring框架使用了这种方式，后续的JDK源码解析系列会提及，好奇的朋友可以查看集合类的结构。
 
