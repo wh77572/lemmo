@@ -5,7 +5,20 @@ order: 8
 
 [参考文档](https://juejin.cn/post/6844904094281236487)
 
-## 谈谈你对 WebPack的认识。
+## webpack打包原理
+这个回答比较范，所以还是贴个链接吧
+
+主要由webpack的以下几个核心概念组成
+1. Entry
+1. Output
+1. Module
+1. Chunk
+1. Loader
+1. Plugin
+
+[webpack名词概念理解](https://www.cnblogs.com/skychx/p/webpack-module-chunk-bundle.html)
+
+[webpack打包原理](https://github.com/webfansplz/article/issues/38)
 
 ## 有哪些常见的Loader？你用过哪些Loader？
 - raw-loader：加载文件原始内容（utf-8）
