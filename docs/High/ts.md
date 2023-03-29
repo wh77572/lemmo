@@ -121,6 +121,26 @@ interface TableProps {
      interface TableProps {
        rows: Record<string, string | number>
      }
+     
+## 泛型 T 什么意思
+其中 T 代表 「Type」，在定义泛型时通常用作第一个类型变量名称。但实际上 T 可以用任何有效名称代替。除了 T 之外，以下是常见泛型变量代表的意思：
+
+K（Key）：表示对象中的键类型；
+
+V（Value）：表示对象中的值类型；
+
+E（Element）：表示元素类型。
+
+其实并不是只能定义一个类型变量，我们可以引入希望定义的任何数量的类型变量。比如我们引入一个新的类型变量 U，用于扩展我们定义的 identity 函数：
+
+```
+function identity <T, U>(value: T, message: U) : T {
+  console.log(message);
+  return value;
+}
+
+console.log(identity<Number, string>(68, "Semlinker"));
+```
 
 ## TypeScript 中 const 和 readonly 的区别？枚举和常量枚举的区别？
 ###  const 与 readonly 的区别？

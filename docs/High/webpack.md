@@ -140,6 +140,17 @@ HMR的核心就是客户端从服务端拉去更新后的文件，准确的说�
 
 [HMR](https://zhuanlan.zhihu.com/p/30669007)
 
+## webpack tree shaking 原理
+Tree-Shaking 是一种基于 ES Module 规范的 Dead Code Elimination 技术，它会在运行过程中静态分析模块之间的导入导出，确定 ESM 模块中哪些导出值未曾其它模块使用，并将其删除，以此实现打包产物的优化。
+
+- 收集模块导出
+- 标记模块导出
+- 生成代码
+- 删除 Dead Code
+
+  在此之后，将由 Terser、UglifyJS 等 DCE 工具“摇”掉这部分无效代码，构成完整的 Tree Shaking 操作。
+
+
 ## 如何优化 Webpack 的构建速度？
 - 使用高版本的 Webpack 和 Node.js
 - 多进程/多实例构建：thread-loader
