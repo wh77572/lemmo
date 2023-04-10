@@ -318,14 +318,14 @@ javascript中new,call,apply,bind等方法是我们经常要使用到，在伪数
     1. 构造函数返回的最后结果是引用数据类型;
 
 ```
-    function myNew(Con, ...args) {
+    function myNew(Fn, ...args) {
       // 创建一个新的空对象
       let obj = {};
       // 将这个空对象的__proto__指向构造函数的原型
-      // obj.__proto__ = Con.prototype;
-      Object.setPrototypeOf(obj, Con.prototype);
+      // obj.__proto__ = Fn.prototype;
+      Object.setPrototypeOf(obj, Fn.prototype);
       // 将this指向空对象
-      let res = Con.apply(obj, args);
+      let res = Fn.apply(obj, args);
       // 对构造函数返回值做判断，然后返回对应的值
       return res instanceof Object ? res : obj;
     }
