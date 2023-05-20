@@ -1,8 +1,4 @@
----
-nav:
-  title: TypeScript
-  order: 4
-  
+---  
 title: 怎么使用
 order: 1
 ---
