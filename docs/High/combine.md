@@ -148,6 +148,38 @@ controller.abort()
 
 [状态码-菜鸟](https://www.runoob.com/http/http-status-codes.html)
 
+### 对于https里的header有哪些了解
+| Header | 解释 | 示例 |
+| :---- | :---- | :---- |
+| Accept-Ranges	| 表明服务器是否支持指定范围请求及哪种类型的分段请求 | Accept-Ranges: bytes |
+| Age |	从原始服务器到代理缓存形成的估算时间（以秒计，非负）|	Age: 12 |
+| Allow	| 对某网络资源的有效的请求行为，不允许则返回405	|Allow: GET, HEAD |
+| Cache-Control	|告诉所有的缓存机制是否可以缓存及哪种类型	|Cache-Control: no-cache |
+| Content-Encoding	|web服务器支持的返回内容压缩编码类型。|	Content-Encoding: gzip |
+| Content-Language	| 响应体的语言 |	Content-Language: en,zh |
+| Content-Length	| 响应体的长度 |	Content-Length: 348 |
+| Content-Location	/ 请求资源可替代的备用的另一地址 |	Content-Location: |index.htm |
+| Content-MD5	| 返回资源的MD5校验值 |	Content-MD5: Q2hlY2sgSW50ZWdyaXR5IQ== |
+| Content-Range	| 在整个返回体中本部分的字节位置 |	Content-Range: bytes 21010-47021/47022 |
+| Content-Type	| 返回内容的MIME类型 |	Content-Type: text/html; charset=utf-8 |
+| Date	原始服务器消息发出的时间 |	Date: Tue, 15 Nov 2010 08:12:31 GMT |
+| ETag	请求变量的实体标签的当前值 |	ETag: “737060cd8c284d8af7ad3082f209582d” |
+| Expires	| 响应过期的日期和时间 |	Expires: Thu, 01 Dec 2010 16:00:00 GMT |
+| Last-Modified	| 请求资源的最后修改时间 |	Last-Modified: Tue, 15 Nov 2010 12:45:26 GMT |
+| Location	| 用来重定向接收方到非请求URL的位置来完成请求或标识新的资源 |	Location: http://www.zcmhi.com/archives/94.html |
+| Pragma	| 包括实现特定的指令，它可应用到响应链上的任何接收方 |	Pragma: no-cache |
+| Proxy-Authenticate	| 它指出认证方案和可应用到代理的该URL上的参数 |	Proxy-Authenticate: Basic |
+| refresh	| 应用于重定向或一个新的资源被创造，在5秒之后重定向（由网景提出，被大部分浏览器支持）|	Refresh: 5; url=http://www.zcmhi.com/archives/94.html |
+| Retry-After	| 如果实体暂时不可取，通知客户端在指定时间之后再次尝试 |	Retry-After: 120 |
+| Server	| web服务器软件名称 |	Server: Apache/1.3.27 (Unix) (Red-Hat/Linux) |
+| Set-Cookie	| 设置Http Cookie	 |Set-Cookie: UserID=JohnDoe; Max-Age=3600; Version=1 |
+| Trailer	|指出头域在分块传输编码的尾部存在 |	Trailer: Max-Forwards |
+| Transfer-Encoding	 | 文件传输编码	|Transfer-Encoding:chunked |
+| Vary	| 告诉下游代理是使用缓存响应还是从原始服务器请求 |	Vary: * |
+| Via	| 告知代理客户端响应是通过哪里发送的 |	Via: 1.0 fred, 1.1 nowhere.com (Apache|1.1) |
+| Warning	| 警告实体可能存在的问题 |	Warning: 199 Miscellaneous warning |
+| WWW-Authenticate	| 表明客户端请求实体应该使用的授权方案 |	WWW-Authenticate: Basic |
+
 ### http  option
 当我们发起跨域请求时，如果是简单请求，那么我们只会发出一次请求，但是如果是复杂请求则先发出 options 请求，用于确认目标资源是否支持跨域，然后浏览器会根据服务端响应的 header 自动处理剩余的请求，如果响应支持跨域，则继续发出正常请求，如果不支持，则在控制台显示错误。
 
@@ -158,7 +190,7 @@ controller.abort()
  1. 转为简单请求，如用 JSONP 做跨域请求
  1. 对 options 请求进行缓存，服务器端设置 Access-Control-Max-Age 字段，那么当第一次请求该 URL 时会发出 OPTIONS 请求，浏览器会根据返回的 Access-Control-Max-Age 字段缓存该请求的 OPTIONS 预检请求的响应结果（具体缓存时间还取决于浏览器的支持的默认最大值，取两者最小值，一般为 10 分钟）。在缓存有效期内，该资源的请求（URL 和 header 字段都相同的情况下）不会再触发预检。（chrome 打开控制台可以看到，当服务器响应 Access-Control-Max-Age 时只有第一次请求会有预检，后面不会了。注意要开启缓存，去掉 disable cache 勾选。）
  
- 
+
 ### http请求优化
  思路：
  1. 更好的连接传输效率。
@@ -816,46 +848,6 @@ server {
 6. window.name + iframe
 同域名情况下，可以通信
 
-### 跨域，相关的几个请求头的含义。
-
-| 请求头| 响应头 |
-|:----------- | :-----------|
-|Origin	                        | Access-Control-Allow-Credentials|
-|Access-Control-Request-Headers	| Access-Control-Allow-Headers|
-|Access-Control-Request-Method	| Access-Control-Allow-Methods|
-|                                | Access-Control-Allow-Origin|
-|                                | Access-Control-Expose-Headers|
-|                                | Access-Control-Max-Age|
-
-
-#### 请求头：
-Origin：当前请求源，和响应头里的Access-Control-Allow-Origin 对标， 是否允许当前源访问，Origin是不可修改的
-
-Access-Control-Request-Headers：本次真实请求的额外请求头，和响应头里的Access-Control-Allow-Headers对标，是否允许真实请求的请求头
-
-Access-Control-Request-Method：本次真实请求的额外方法，和响应头里的Access-Control-Allow-Methods对标，是否允许真实请求使用的请求方法
-
-#### 响应头
-- Access-Control-Allow-Credentials：
-
-这里的Credentials（凭证）其意包括：Cookie ，授权标头或 TLS 客户端证书，默认CORS请求是不带Cookies的，这与JSONP不同，JSONP每次请求都携带Cookies的，当然跨域允许带Cookies会导致CSRF漏洞。如果非要跨域传递Cookies，web端需要给ajax设置withCredentials为true，同时，服务器也必须使用Access-Control-Allow-Credentials头响应。此响应头true意味着服务器允许cookies（或其他用户凭据）包含在跨域请求中。另外，简单的GET请求是不预检的，即使请求的时候设置widthCrenditials为true，如果响应头不带Access-Control-Allow-Credentials，则会导致整个响应资源被浏览器忽略。
-
-- Access-Control-Allow-Headers
-- Access-Control-Allow-Methods
-- Access-Control-Allow-Origin
-- Access-Control-Expose-Headers：
-
-在CORS中，默认的，只允许客户端读取下面六个响应头（在axios响应对象的headers里能看到）：
-
-    Cache-Control
-    Content-Language
-    Content-Type
-    Expires
-    Last-Modified
-    Pragma
-    
-[参考资料 github 62](https://github.com/amandakelake/blog/issues/62)
-
 ### document.domain的限制是啥？
 document.domain这个方法使用极其简单，但是也有较大的限制，主要用于主域相同的域之间的数据通信。
 
@@ -1037,10 +1029,11 @@ rebase 特点：会合并之前的commit历史
 无代码（no-code）即不需要写代码就能完成开发，更加偏向业务层的定制。
 
 ## qiankun
-形如 iframe 却非 iframe
+qiankun 为了实现应用和应用之间的变量隔离，做了三种沙箱机制，分别为快照沙箱（snapshotSandbox） , 单例沙箱（legacySandbox）,代理沙箱（proxySandbox）
 
-乾坤是正是基于 single-spa 二次开发的，在 single-spa 的基础上优化了使用体验并扩展了功能，使得乾坤成为了一个开箱即用，功能强大的微前端框架。可以说乾坤是站在 single-spa 的肩膀上成为微前端之巅的。
-目前国内大多数微前端架构的技术方案都是采用的乾坤。
+qiankun是基于 `single-spa` 二次开发的，在 single-spa 的基础上优化了使用体验并扩展了功能。
+
+主要改为了 html 作为入口，解析 html，从中分析 js、css，然后再加载，这个是 `import-html-entry `这个包实现的。
 
 ### iframe缺点
 - URL 状态的问题。iframe 的 url 状态会在刷新时丢失，同时后退、前进按钮都无法控制 iframe
@@ -1070,6 +1063,26 @@ rebase 特点：会合并之前的commit历史
 这样设计的目的是想把全局 state 的掌控权交给基座主应用，避免子应用乱操作。
 
 如果以上数据的通信不够用，也可以使用 window.addEventListener 直接进行事件通信。
+
+## GraphQL
+
+### 初衷和背景
+随着移动用户增多, 网络请求有设备电量消耗, 弱网环境等问题. 这在当时是一个非常紧迫的issue, 于是他们研究出了GraphQL, 减小了需要发送的请求个数和数据传输量.
+
+### GraphQL的优势
+1. 客户端可以精准取到自己想要的数据, 不再多取或者少取. 多取: 取到了不需要的数据, 可能有性能, 流量问题; 少取: 需要多发请求来满足需求.
+1. API有strong typed schema. 客户端可以通过schema知道API支持什么, 包括操作, 参数, 可能的响应等. 支持introspection. schema是一个API能力的contract, 不需要再额外写文档, 一旦定义好了之后, 前后端可以独立工作.
+1. 强类型, 利用schema, 结合build工具, 可以在编译时期对请求进行一些检查.
+1. 有助于产品快速升级迭代. 前端的改动可以不需要后端的修改.
+1. 富有洞察力的数据分析: 因为可以精细地知道client要读的数据, 对数据的的使用情况可以有更深的理解. 在API改动的时候可以deprecate掉不用的数据. 也有助于后端的性能分析.
+1. schema stitching: 多个不同的GraphQL的endpoints可以组合成为一个.
+1. 社区支持好. 多种语言: graphql.org/code/#serve…; 多种客户端: medium.com/open-graphq…; 多种工具: Prisma, GraphQL Faker, GraphQL Playground, graphql-config.
+
+### GraphQL的缺点
+1. 可能并不适合所有类型的API. 比如认证, 授权(authentication and authorization).
+1. 服务器端的性能问题.
+1. 服务器端的Cache. 需要一个全局的id, 讨论见: Caching.
+1. 通信的快速发展, 实现GraphQL节约的数据传输量可能不值一提, 优势不明显.
 
 ## 进程和线程的区别
 

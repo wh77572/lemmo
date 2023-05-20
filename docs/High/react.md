@@ -4,6 +4,13 @@ order: 4
 ---
 [React Guidebook](https://tsejx.github.io/react-guidebook/foundation/main-concepts/lifecycle/)
 
+## React和原生js的区别
+我觉得最大的区别就是React使用了虚拟dom，每次渲染的时候减少了重绘次数，这样节省了内存，提升了加载速度. 而真实dom的元素体积较大，不轻易使用js加载页面
+
+其次React框架里面只有一个div是html，其余所有内容都由js生成
+
+最后React是基于组件的，提升了代码的复用性
+
 ## 浏览器为什么不能读取 JSX？
 浏览器只能处理 JavaScript 对象，而不能读取常规 JavaScript 对象中的 JSX。所以为了使浏览器能够读取 JSX，首先，需要用像 Babel 这样的 JSX 转换器将 JSX 文件转换为 JavaScript 对象，然后再将其传给浏览器。
 
@@ -205,6 +212,86 @@ Create React App 是 Facebook 推出的用于构建 React 应用程序的工具�
 
 [React hook](https://zh-hans.reactjs.org/docs/hooks-faq.html#which-versions-of-react-include-hooks)
 
+## 什么场景下使用context？
+我们知道React 是单向数据流，如果组件之间有嵌套引用的关系如A引用B，B引用C，像套娃一样的关系， 在没有状态管理的情况下，只能通过props一层一层的进行传递，当组件间的调用过多的时候，维护会变得十分复杂，React自带API context可以使这个局面得到缓和，实现A组件直接到C组件的值传递，不需要经过中间组件。
+
+### 举个小栗子
+A>B>C三个组件逐层嵌套，每个组件里都包含半句话，在A组件里包含我的个人信息，需要在C组件里显示，要求信息数据不通过B组件传递。
+
+```
+//组件A
+import React from "react";
+import B from "./B";
+
+export const nameContext = React.createContext("");
+export default function App() {
+  return (
+    <nameContext.Provider value={"ys"}>
+      大家好，
+      <B />
+    </nameContext.Provider>
+  );
+}
+```
+
+```
+//组件B
+import C from "./C";
+
+export default function B() {
+  return (
+    <>
+      我是今天的分享者，
+      <C />
+    </>
+  );
+}
+```
+
+```
+//组件C
+import React from "react";
+import { nameContext } from "./App";
+
+export default function C() {
+  return (
+    <nameContext.Consumer>
+      {(name) => <span>我叫{name}</span>}
+    </nameContext.Consumer>
+  );
+}
+
+useContext写法
+
+import React, { useContext } from "react"
+import { nameContext, titleContext } from "./App"
+
+export default function C() {
+  const name = useContext(nameContext)
+  const title = useContext(titleContext)
+
+  return (
+    <span>
+      {name}
+      {title}
+    </span>
+  )
+}
+```
+
+### 缺点
+可能会导致Child重新渲染，造成不必要的开销。
+
+解决办法
+```
+ // 只需要修改这里通过useMemo包装，保证每次返回的对象不变，deeps为[],只在首次挂载执行，所以就保证了每次value都是同一个。
+ const ctxValue = useMemo(() => ( {setShow }), [])
+
+ <ParentContext.Provider value={ctxValue}>
+    <Child></Child>
+ </ParentContext.Provider>
+```
+
 ## React 中的 refs 是什么？
 Refs 是 React 中用于引用的简写。它是一个属性，有助于存储对特定 DOM 节点或 React 元素的引用。它提供了一种访问 React DOM 节点或 React 元素以及如何与之交互的方法。当我们想要更改子组件的值而不使用 props 时使用它。
 
@@ -311,6 +398,8 @@ React.memo 的作用是 缓存 组件，它会对传入的组件加上缓存功�
 React.memo 判断是否使用缓存，默认使用的是浅比较，也就是只比较第一层的 key。
 
 也就是拿到两参数：旧的和新的 props 对象，然后根据该方法的返回值来决定是否使用缓存。如果为真值，使用缓存，否则重新渲染并把新的渲染结果缓存下来。
+
+#### React.memo
 ```
 function MyComponent(props) {
   /* render using props */
@@ -323,6 +412,47 @@ function areEqual(prevProps, nextProps) {
   */
 }
 export default React.memo(MyComponent, areEqual);
+```
+
+#### useMemo
+```
+import { useState, useEffect, useRef, useMemo } from "react";
+import UseMemoCounts from "./use-memo-counts";
+
+export default function ParentComponent() {
+  .
+  .
+  const [times, setTimes] = useState(0);
+  const useMemoRef = useRef(0);
+
+  const incrementUseMemoRef = () => useMemoRef.current++;
+
+  // uncomment the next line to test that <UseMemoCounts /> will re-render every t ime the parent re-renders.
+  // const memoizedValue = useMemoRef.current++;
+
+// the next line ensures that <UseMemoCounts /> only renders when the times value changes
+const memoizedValue = useMemo(() => incrementUseMemoRef(), [times]);
+
+  .
+  .
+
+  return (
+    <div className="flex flex-col justify-center items-center border-2 rounded-md mt-5 dark:border-yellow-200 max-w-lg m-auto pb-10 bg-gray-900">
+      .
+      .
+        <div className="mt-4 text-center">
+          <button
+            className="bg-indigo-200 py-2 px-10 rounded-md"
+            onClick={() => setTimes(times+1)}
+          >
+            Force render
+          </button>
+
+          <UseMemoCounts memoizedValue={memoizedValue} />
+        </div>
+    </div>
+  );
+}
 ```
 
 ### 总结
@@ -618,6 +748,10 @@ btn.onclick = function () {
 [参考资料](https://blog.ahulib.com/other/React_Fiber%E6%9E%B6%E6%9E%84%E4%B8%8B%E7%9A%84Concurrent%E6%A8%A1%E5%BC%8F.html)
 
 ## React事件机制
+我们日常写的事件放在某元素的jsx里，然而当jsx进行渲染的时候，它没有把事件加载到该元素对应的真实dom，而是绑定到顶层的document上面，由document监听所有的事件，调用对应的事件函数。
+
+这样统一管理的优点就是提升了性能，也解决了兼容问题
+
 React事件机制包括事件注册、事件的合成、事件冒泡、事件派发等
 
 ### 请说一下你对React合成事件的理解？
