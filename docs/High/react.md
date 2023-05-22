@@ -841,7 +841,37 @@ Renderer根据Reconciler为Virtual DOM打的标记，同步执行对应的渲染
 
 由于Scheduler和Reconciler的工作都在内存中进行，不会更新页面上的节点，所以用户不会看见更新不完全的页面。
 
-### 请说一下Fiber 架构下 Concurrent 模式的实现原理？
+### React 中 fiber 是用来做什么的
+Fiber 是 React 16 中采用的新协调（reconciliation）引擎，主要目标是支持虚拟 DOM 的渐进式渲染。
+
+Fiber 将原有的 Stack Reconciler 替换为 Fiber Reconciler，提高了复杂应用的可响应性和性能。主要通过以下方式达成目标：
+
+1. 对大型复杂任务的分片。
+1. 对任务划分优先级，优先调度高优先级的任务。
+1. 调度过程中，可以对任务进行挂起、恢复、终止等操作。
+
+Fiber 对现有代码的影响： 由于 Fiber 采用了全新的调度方式，任务的更新过程可能会被打断，这意味着在组件更新过程中，render 及其之前的生命周期函数可能会调用多次。因此，在下列生命周期函数中不应出现副作用。
+
+- shouldComponentUpdate
+- React 16 中已经声明废弃的钩子 
+    - componentWillMount（UNSAFE_componentWillMount）
+    - componentWillReceiveProps（UNSAFE_componentWillReceiveProps）
+    - componentWillUpdate（UNSAFE_componentWillUpdate）
+[fiber原理](https://cloud.tencent.com/developer/article/1882296)
+
+### fiber怎么划分任务优先级
+#### 事件优先级
+事件优先级是在注册阶段被确定的，在向root上注册事件时，会根据事件的类别，创建不同优先级的事件监听（listener），最终将它绑定到root上去。 
+
+- 离散事件（DiscreteEvent）：click、keydown、focusin等，这些事件的触发不是连续的，优先级为0。
+- 用户阻塞事件（UserBlockingEvent）：drag、scroll、mouseover等，特点是连续触发，阻塞渲染，优先级为1。
+- 连续事件（ContinuousEvent）：canplay、error、audio标签的timeupdate和canplay，优先级最高，为2。
+
+4种优先级：事件优先级、更新优先级、任务优先级、调度优先级，它们之间是递进的关系。事件优先级由事件本身决定，更新优先级由事件计算得出，然后放到root.pendingLanes，任务优先级来自root.pendingLanes中最紧急的那些lanes对应的优先级，调度优先级根据任务优先级获取。几种优先级环环相扣，保证了高优任务的优先执行。 
+
+[fiber优先级](https://www.51cto.com/article/656064.html)
+
+### 请说一下Fiber 架构下 Concurrent 模式（异步渲染）的实现原理？
 Concurrent 模式（异步渲染）下的"时间切片"和"优先级"
 
 ### 时间切片
