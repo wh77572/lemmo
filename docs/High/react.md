@@ -718,6 +718,20 @@ Redux 的优点如下：
 - 易于测试 -  Redux 的代码主要是小巧、纯粹和独立的功能。这使代码可测试且独立。
 - 组织 -  Redux 准确地说明了代码的组织方式，这使得代码在团队使用时更加一致和简单。
 
+### Redux中间件机制
+流程： dispatch(action) = dispatch({type:'', payload：{} }) -> 执行 reducer() -> 修改state。
+
+在redux中，中间件的作用在于， 调用 dispatch 触发 reducer之前做一些其他操作，也就是说，它改变的是执行dispatch到 触发 reducer的流程。
+
+
+原来流程是这样的：
+
+`dispatch -> reducer`
+
+加入中间件就变成这样了：
+
+`dispatch -> 中间件(Middleware) -> 中间件(Middleware)  -> 中间件(Middleware)  -> reducer`
+
 ## setState的更新是同步还是异步的？
 ### 调用 setState 之后发生了什么？
 1. React 会将传入的参数对象与组件当前的状态合并产生了新的state
