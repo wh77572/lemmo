@@ -301,6 +301,126 @@ JIT，全称是 Just In Time，即时编译
 
 2. 在解释型语言的解释过程中，同样解释器也会对源代码进行词法分析、语法分析，并生成抽象语法树（AST），不过它会再基于抽象语法树生成字节码，最后再根据字节码来执行程序、输出结果。
 
+## 关于javascript中的toString()和valueOf()
+
+### js中toString方法重写
+```
+function Person(name , age , gender){
+    this.name = name;
+    this.age = age;
+    this.gender = gender;
+}
+
+//当我们直接在页面中打印一个对象时，事件上是输出的对象的toString()方法的返回值
+//如果我们希望在输出对象时不输出[object Object]，可以为对象添加一个toString()方法
+
+//修改Person原型的toString
+Person.prototype.toString = function(){
+    return "Person[name="+this.name+",age="+this.age+",gender="+this.gender+"]";
+};
+
+
+//创建一个Person实例
+var per = new Person("孙悟空",18,"男");
+var per2 = new Person("猪八戒",28,"男");
+
+console.log(per2.toString());
+console.log(per.toString());
+```
+
+### toString()和valueOf()
+toString() 和 valueOf() 是对象的两个方法，你在浏览器后台输入Object.prototype就可以看到了它们是其中的两个。
+
+先说一下两个东西的用途：(（undefined  和 null  的值就不举例了，因为它们都没有这两个方法，所以肯定会报错的）)
+
+toString( ):返回对象的字符串表示。
+
+valueOf( ):返回对象的字符串、数值或布尔值表示。
+
+```
+//先看看toString()方法的结果
+var a = 3;
+var b = '3';
+var c = true;
+var d = {test:'123',example:123}
+var e = function(){console.log('example');}
+var f = ['test','example'];
+
+//先看看toString()方法的结果
+a.toString();// "3"
+b.toString();// "3"
+c.toString();// "true"
+d.toString();// "[object Object]"
+e.toString();// "function (){console.log('example');}"
+f.toString();// "test,example"
+
+//再看看valueOf()方法的结果
+a.valueOf();// 3
+b.valueOf();// "3"
+c.valueOf();// true
+d.valueOf();// {test:'123',example:123}
+e.valueOf();// function(){console.log('example');}
+f.valueOf();// ['test','example']
+```
+
+
+### 操作符运算
+```
+//例子一
+var example = {test:'123'};
+console.log(+example);// NaN
+
+//例子二 同时改写 toString 和 valueOf 方法
+var example = {
+    toString:function(){
+        return '23';
+    },
+    valueOf:function(){
+        return '32';
+    }
+};
+console.log(+example);// 32
+
+//例子三 只改写 toString 方法
+var example = {
+    toString:function(){
+        return '23';
+    }
+};
+console.log(+example);// 23
+```
+
+### 弹窗
+```
+//例子一
+var example = {test:'123'};
+alert(example);// "[object Object]"
+
+//例子二 同时改写 toString 和 valueOf 方法
+var example = {
+    toString:function(){
+        return '23';
+    },
+    valueOf:function(){
+        return '32';
+    }
+};
+alert(example);// "23"
+
+//例子三 只改写 valueOf 方法
+var example = {
+    valueOf:function(){
+        return '32';
+    }
+};
+alert(example);// "[object Object]"
+```
+
+### 总结
+一般用操作符单独对对象进行转换的时候，如果对象存在valueOf或toString改写的话，就先调用改写的方法，valueOf优先级更高，如果没有被改写，则直接调用对象原型的valueOf方法。
+
+如果是弹窗的话，直接调用toString方法。至于其他情况，待续……
+
 ## new,call,apply,bind方法的实现原理
 javascript中new,call,apply,bind等方法是我们经常要使用到，在伪数组转数组、函数传参、继承等场景中，都离不开他们。
 ### new
