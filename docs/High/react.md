@@ -644,7 +644,7 @@ function MyComponent() {
 ##  解释一下 Redux
 [Redux](https://cn.redux.js.org/tutorials/essentials/part-1-overview-concepts/)
 
-### Redux connect 做了什么
+### react-redux connect 做了什么
 react-redux 提供了两个重要的对象， Provider 和 connect ，前者使 React 组件可被连接（connectable），后者把 React 组件和 Redux 的 store 真正连接起来。
 
 connect方法声明：
@@ -665,6 +665,11 @@ const mapStateToProps = (state) => {
   }
 }
 ```
+
+### Redux和React-redux的使用方法及差异
+![redux 流程图](/assets/imgs/redux.png "redux")
+
+#### 个人理解  React-redux 就是跟hooks的useContex + useReducer的原理类似
 
 ### Redux 怎么做到每个组件可以访问的 store 的
 把所有内容包裹在 Provider 组件中，将之前创建的 store 作为 prop传给 Provider 。
