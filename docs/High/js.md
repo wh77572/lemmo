@@ -363,7 +363,6 @@ e.valueOf();// function(){console.log('example');}
 f.valueOf();// ['test','example']
 ```
 
-
 ### 操作符运算
 ```
 //例子一
@@ -1189,6 +1188,25 @@ async / await 本质上就是 generator 的语法糖
 内置执行器，无需手动执行 next() 方法
 
 ### generator
+**基本用法**
+
+generator函数跟普通函数在写法上的区别就是，多了一个星号*，并且只有在generator函数中才能使用yield，什么是yield呢，他相当于generator函数执行的中途暂停点，比如下方有3个暂停点。而怎么才能暂停后继续走呢？那就得使用到next方法，next方法执行后会返回一个对象，对象中有value 和 done两个属性
+
+- value：暂停点后面接的值，也就是yield后面接的值
+- done：是否generator函数已走完，没走完为false，走完为true
+
+```
+function* gen() {
+  yield 1
+  yield 2
+  yield 3
+}
+const g = gen()
+console.log(g.next()) // { value: 1, done: false }
+console.log(g.next()) // { value: 2, done: false }
+console.log(g.next()) // { value: 3, done: false }
+console.log(g.next()) // { value: undefined, done: true }
+```
 
 ## JavaScript中substring()、substr()、slice()的区别
 - substring(start,end)返回指定下标间的字符，下标必须为正整数

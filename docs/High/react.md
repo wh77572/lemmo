@@ -641,160 +641,6 @@ function MyComponent() {
 }
 ```
 
-##  解释一下 Redux
-[Redux](https://cn.redux.js.org/tutorials/essentials/part-1-overview-concepts/)
-
-### react-redux connect 做了什么
-react-redux 提供了两个重要的对象， Provider 和 connect ，前者使 React 组件可被连接（connectable），后者把 React 组件和 Redux 的 store 真正连接起来。
-
-connect方法声明：
-```
-connect([mapStateToProps], [mapDispatchToProps], [mergeProps],[options])
-```
-作用：连接React组件与 Redux store。
-
-参数说明：
-
-    mapStateToProps(state, ownProps) : stateProps
-    
-这个函数允许我们将 store 中的数据作为 props 绑定到组件上。
-```
-const mapStateToProps = (state) => {
-  return {
-    count: state.count
-  }
-}
-```
-
-### Redux和React-redux的使用方法及差异
-![redux 流程图](/assets/imgs/redux.png "redux")
-
-#### 个人理解  React-redux 就是跟hooks的useContex + useReducer的原理类似
-
-### Redux 怎么做到每个组件可以访问的 store 的
-把所有内容包裹在 Provider 组件中，将之前创建的 store 作为 prop传给 Provider 。
-[Redux](https://juejin.cn/post/6844903505191239694#heading-4)
-
-### 如何在 Redux 中定义 Action？
-Action 本质上是 JavaScript 普通对象。我们约定，action 内必须使用一个字符串类型的 type 字段来表示将要执行的动作。多数情况下，type 会被定义成字符串常量。当应用规模越来越大时，建议使用单独的模块或文件来存放 action。
-
-    import { ADD_TODO, REMOVE_TODO } from '../actionTypes'
-
-Action 创建函数
-
-```
-function addTodo(text) {
-  return {
-    type: ADD_TODO,
-    text
-  }
-}
-```
-
-### 解释 Reducer 的作用。
-Reducers 是纯函数，它规定应用程序的状态怎样因响应 ACTION 而改变。Reducers 通过接受先前的状态和 action 来工作，然后它返回一个新的状态。它根据操作的类型确定需要执行哪种更新，然后返回新的值。如果不需要完成任务，它会返回原来的状态。
-
-### Store 在 Redux 中的意义是什么？
-Store 是一个 JavaScript 对象，它可以保存程序的状态，并提供一些方法来访问状态、调度操作和注册侦听器。应用程序的整个状态/对象树保存在单一存储中。因此，Redux 非常简单且是可预测的。我们可以将中间件传递到 store 来处理数据，并记录改变存储状态的各种操作。所有操作都通过 reducer 返回一个新状态。
-
-###  Redux遵循的三个原则
-1. **单一事实来源：** 整个应用的状态存储在单个 store 中的对象/状态树里。单一状态树可以更容易地跟踪随时间的变化，并调试或检查应用程序。
-1. **状态是只读的：** 改变状态的唯一方法是去触发一个动作。动作是描述变化的普通 JS 对象。就像 state 是数据的最小表示一样，该操作是对数据更改的最小表示。
-1. **使用纯函数进行更改：** 为了指定状态树如何通过操作进行转换，你需要纯函数。纯函数是那些返回值仅取决于其参数值的函数。
-
-### Redux与Flux有何不同？
-|Flux | Redux |
-| ---- | ---- |
-|1. Store 包含状态和更改逻辑 | 1. Store 和更改逻辑是分开的 |
-|2. 有多个 Store | 2. 只有一个 Store |
-|3. 所有 Store 都互不影响且是平级的 | 3. 带有分层 reducer 的单一 Store |
-|4. 有单一调度器 | 4. 没有调度器的概念 |
-|5. React 组件订阅 store | 5. 容器组件是有联系的 |
-|6. 状态是可变的 | 6. 状态是不可改变的 |
-
-### Redux 有哪些优点？
-Redux 的优点如下：
-
-- 结果的可预测性 -  由于总是存在一个真实来源，即 store ，因此不存在如何将当前状态与动作和应用的其他部分同步的问题。
-- 可维护性 -  代码变得更容易维护，具有可预测的结果和严格的结构。
-- 服务器端渲染 -  你只需将服务器上创建的 store 传到客户端即可。这对初始渲染非常有用，并且可以优化应用性能，从而提供更好的用户体验。
-- 开发人员工具 -  从操作到状态更改，开发人员可以实时跟踪应用中发生的所有事情。
-- 社区和生态系统 -  Redux 背后有一个巨大的社区，这使得它更加迷人。一个由才华横溢的人组成的大型社区为库的改进做出了贡献，并开发了各种应用。
-- 易于测试 -  Redux 的代码主要是小巧、纯粹和独立的功能。这使代码可测试且独立。
-- 组织 -  Redux 准确地说明了代码的组织方式，这使得代码在团队使用时更加一致和简单。
-
-### Redux中间件机制
-流程： dispatch(action) = dispatch({type:'', payload：{} }) -> 执行 reducer() -> 修改state。
-
-在redux中，中间件的作用在于， 调用 dispatch 触发 reducer之前做一些其他操作，也就是说，它改变的是执行dispatch到 触发 reducer的流程。
-
-
-原来流程是这样的：
-
-`dispatch -> reducer`
-
-加入中间件就变成这样了：
-
-`dispatch -> 中间件(Middleware) -> 中间件(Middleware)  -> 中间件(Middleware)  -> reducer`
-
-## setState的更新是同步还是异步的？
-### 调用 setState 之后发生了什么？
-1. React 会将传入的参数对象与组件当前的状态合并产生了新的state
-
-2. 生成新的虚拟DOM树  ==> render()
-
-3. 计算出新树与老树的节点差异，然后做真实DOM的差异更新
-
-### react 的useState 钩子，底层是怎么实现
-用于定义组件的 State，对标到类组件中this.state的功能
-
-```
-function render() {
-  ReactDOM.render(<App />, document.getElementById("root"));
-}
-
-let state;
-
-function useState(initialState){
-  state = state || initialState;
-
-  function setState(newState) {
-    state = newState;
-    render();
-  }
-
-  return [state, setState];
-}
-
-render(); // 首次渲染
-```
-
-### React componentWillMount 做 setState 会干嘛
-componentWillMount中若使用setState，其state会被合并到初始数据当中。
-
-## 说一下你了解的React状态管理库以及原理和应用场景？
-在学习 Redux 之前需要先理解其大致工作流程，一般来说是这样的：
-
-1. 用户在页面上进行某些操作，通过 dispatch 发送一个 action。
-
-1. Redux 接收到这个 action 后通过 reducer 函数获取到下一个状态。
-
-1. 将新状态更新进 store，store 更新后通知页面进行重新渲染。
-
-### 三大原则
-- 单一数据源
-在 Redux 中，所有的状态都放到一个 store 里面，一个应用中一般只有一个 store。
-
-- State 是只读的
-在 Redux 中，唯一改变 state 的方法是通过 dispatch 触发 action，action 描述了这次修改行为的相关信息。只允许通过 action 修改可以避免一些 mutable 的操作，保证状态不会被随意修改
-
-- 通过纯函数来修改
-为了描述 action 使状态如何修改，需要你编写 reducer 函数来修改状态。reducer 函数接收前一次的 state 和 action，返回新的 state。无论被调用多少次，只要传入相同的 `state 和 action，那么就一定返回同样的结果。
-
-这三个原则使得 Redux 状态是可预测的，很容易实现时间旅行，但也带来了一些弊端，那就是上手难度比较高，模板代码太多，需要了解 `action、reducer、middleware 等概念。
-
-[React状态](https://github.com/yinguangyao/blog/issues/56)
-
 ## React是如何渲染和调度更新的？
 ### React 15
 - 架构分层
@@ -925,6 +771,227 @@ React事件机制包括事件注册、事件的合成、事件冒泡、事件派
 合成事件是 React模拟原生 DOM事件所有能力的一个事件对象，即浏览器原生事件的跨浏览器包装器
 
 根据 W3C规范来定义合成事件，兼容所有浏览器，拥有与浏览器原生事件相同的接口.
+
+##  redux,react-redux,redux-saga,dva的区别与联系
+
+### redux
+1、定位：它是将flux和函数式编程思想结合在一起形成的架构；
+
+2、思想：视图与状态是一一对应的；所有的状态，都保存在一个对象里面；
+
+3、API：
+- store：就是一个数据池，一个应用只有一个
+- state：一个 State 对应一个 View。只要 State 相同，View 就相同。
+- action：State 的变化，会导致 View 的变化。但是，用户接触不到 State，只能接触到 View。所以，State 的变化必须是 View 导致的。Action 就是 View 发出的通知，表示 State 应该要发生变化了。Action 是一个对象。其中的type属性是必须的，表示 Action 的名称。其他属性可以自由设置。
+- dispatch：它是view发出action的唯一方法；
+- reducer：view发出action后，state要发生变化，reducer就是改变state的处理层，它接收action和state，通过处理action来返回新的state；
+- subscribe：监听。监听state，state变化view随之改变；
+
+### react-redux
+1、定位：react-redux是为了让redux更好的适用于react而生的一个库，使用这个库，要遵循一些规范；
+
+2、主要内容
+
+UI组件：就像一个纯函数，没有state，不做数据处理，只关注view，长什么样子完全取决于接收了什么参数（props）
+容器组件：关注行为派发和数据梳理，把处理好的数据交给UI组件呈现；React-Redux规定，所有的UI组件都由用户提供，容器组件则是由React-Redux自动生成。也就是说，用户负责视觉层，状态管理则是全部交给它。
+
+connect：这个方法可以从UI组件生成容器组件；但容器组件的定位是处理数据、响应行为，因此，需要对UI组件添加额外的东西，即mapStateToProps和mapDispatchToProps，也就是在组件外加了一层state；
+
+mapStateToProps：一个函数， 建立一个从（外部的）state对象到（UI组件的）props对象的映射关系。 它返回了一个拥有键值对的对象；
+
+mapDispatchToProps：用来建立UI组件的参数到store.dispatch方法的映射。 它定义了哪些用户的操作应该当作动作，它可以是一个函数，也可以是一个对象。
+
+以上，redux的出现已经可以使react建立起一个大型应用，而且能够很好的管理状态、组织代码，但是有个棘手的问题没有很好地解决，那就是异步；在react-redux中一般是引入middleware中间件来处理，redux-thunk
+
+### redux-saga：
+
+1、定位：react中间件；旨在于更好、更易地解决异步操作（有副作用的action）,不需要像在react-redux上还要额外引入redux-thunk；redux-saga相当于在Redux原有数据流中多了一层，对Action进行监听，捕获到监听的Action后可以派生一个新的任务对state进行维护；
+
+2、特点：通过 Generator 函数来创建，可以用同步的方式写异步的代码；
+
+3、API：
+
+Effect： 一个简单的对象，这个对象包含了一些给 middleware 解释执行的信息。所有的Effect 都必须被 yield 才会执行。
+
+put：触发某个action，作用和dispatch相同；
+
+### dva
+定位：dva 首先是一个基于redux-saga 的数据流方案，然后为了简化开发体验，dva 还额外内置了 react-router 和 fetch，所以也可以理解为一个轻量级的应用框架。dva = React-Router + Redux + Redux-saga；
+
+2、核心：
+
+- State：一个对象，保存整个应用状态；
+- View：React 组件构成的视图层；
+- Action：一个对象，描述事件(包括type、payload)
+- connect 方法：一个函数，绑定 State 到 View
+- dispatch 方法：一个函数，发送 Action 到 State
+
+
+3、model：dva 提供 app.model 这个对象，所有的应用逻辑都定义在它上面。
+
+4、model内容：
+
+- namespace：model的命名空间；整个应用的 State，由多个小的 Model 的 State 以 namespace 为 key 合成；
+- state：该命名空间下的数据池；
+- effects：副作用处理函数；
+- reducers：等同于 redux 里的 reducer，接收 action，同步更新 state；                   
+- subscriptions：订阅信息；
+
+dva 是基于现有应用架构 (redux + react-router + redux-saga 等)的一层轻量封装，没有引入任何新概念，全部代码不到 100 行。dva 实现上尽量不创建新语法，而是用依赖库本身的语法，比如 router 的定义还是用 react-router 的 JSX 语法的方式(dynamic config 是性能的考虑层面，之后会支持)。
+
+他最核心的是提供了 app.model 方法，用于把 reducer, initialState, action, saga 封装到一起
+
+### react-redux connect 做了什么
+react-redux 提供了两个重要的对象， Provider 和 connect ，前者使 React 组件可被连接（connectable），后者把 React 组件和 Redux 的 store 真正连接起来。
+
+connect方法声明：
+```
+connect([mapStateToProps], [mapDispatchToProps], [mergeProps],[options])
+```
+作用：连接React组件与 Redux store。
+
+参数说明：
+
+    mapStateToProps(state, ownProps) : stateProps
+    
+这个函数允许我们将 store 中的数据作为 props 绑定到组件上。
+```
+const mapStateToProps = (state) => {
+  return {
+    count: state.count
+  }
+}
+```
+
+### Redux和React-redux的使用方法及差异
+![redux 流程图](/assets/imgs/redux.png "redux")
+
+#### 个人理解  React-redux 就是跟hooks的useContex + useReducer的原理类似
+
+### Redux 怎么做到每个组件可以访问的 store 的
+把所有内容包裹在 Provider 组件中，将之前创建的 store 作为 prop传给 Provider 。
+[Redux](https://juejin.cn/post/6844903505191239694#heading-4)
+
+### 如何在 Redux 中定义 Action？
+Action 本质上是 JavaScript 普通对象。我们约定，action 内必须使用一个字符串类型的 type 字段来表示将要执行的动作。多数情况下，type 会被定义成字符串常量。当应用规模越来越大时，建议使用单独的模块或文件来存放 action。
+
+    import { ADD_TODO, REMOVE_TODO } from '../actionTypes'
+
+Action 创建函数
+
+```
+function addTodo(text) {
+  return {
+    type: ADD_TODO,
+    text
+  }
+}
+```
+
+### 解释 Reducer 的作用。
+Reducers 是纯函数，它规定应用程序的状态怎样因响应 ACTION 而改变。Reducers 通过接受先前的状态和 action 来工作，然后它返回一个新的状态。它根据操作的类型确定需要执行哪种更新，然后返回新的值。如果不需要完成任务，它会返回原来的状态。
+
+### Store 在 Redux 中的意义是什么？
+Store 是一个 JavaScript 对象，它可以保存程序的状态，并提供一些方法来访问状态、调度操作和注册侦听器。应用程序的整个状态/对象树保存在单一存储中。因此，Redux 非常简单且是可预测的。我们可以将中间件传递到 store 来处理数据，并记录改变存储状态的各种操作。所有操作都通过 reducer 返回一个新状态。
+
+###  Redux遵循的三个原则
+1. **单一事实来源：** 整个应用的状态存储在单个 store 中的对象/状态树里。单一状态树可以更容易地跟踪随时间的变化，并调试或检查应用程序。
+1. **状态是只读的：** 改变状态的唯一方法是去触发一个动作。动作是描述变化的普通 JS 对象。就像 state 是数据的最小表示一样，该操作是对数据更改的最小表示。
+1. **使用纯函数进行更改：** 为了指定状态树如何通过操作进行转换，你需要纯函数。纯函数是那些返回值仅取决于其参数值的函数。
+
+### Redux与Flux有何不同？
+|Flux | Redux |
+| ---- | ---- |
+|1. Store 包含状态和更改逻辑 | 1. Store 和更改逻辑是分开的 |
+|2. 有多个 Store | 2. 只有一个 Store |
+|3. 所有 Store 都互不影响且是平级的 | 3. 带有分层 reducer 的单一 Store |
+|4. 有单一调度器 | 4. 没有调度器的概念 |
+|5. React 组件订阅 store | 5. 容器组件是有联系的 |
+|6. 状态是可变的 | 6. 状态是不可改变的 |
+
+### Redux中间件机制
+流程： dispatch(action) = dispatch({type:'', payload：{} }) -> 执行 reducer() -> 修改state。
+
+在redux中，中间件的作用在于， 调用 dispatch 触发 reducer之前做一些其他操作，也就是说，它改变的是执行dispatch到 触发 reducer的流程。
+
+
+原来流程是这样的：
+
+`dispatch -> reducer`
+
+加入中间件就变成这样了：
+
+`dispatch -> 中间件(Middleware) -> 中间件(Middleware)  -> 中间件(Middleware)  -> reducer`
+
+redux使用 applyMiddleware， redux使用redux-thunk
+
+## RN在开发中的一些坑点和注意事项
+
+react-native是一个可以使用JavaScript+react编写移动端native应用的框架，是目前一种很是热门的一种移动应用开发方案。但是react-native通用存在着很多的问题，这让很多开发人员不得不注意其中的问题所在，并避免踩坑，这里记录一下常见的坑点，主要是分为三类：
+
+1. 通用坑点
+1. Android坑点
+1. IOS的坑点
+
+[RN在开发中的一些坑点和注意事项](https://blog.caoweiju.com/2019/07/21/rn%E5%9C%A8%E5%BC%80%E5%8F%91%E4%B8%AD%E7%9A%84%E4%B8%80%E4%BA%9B%E5%9D%91%E7%82%B9%E5%92%8C%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9/)
+
+## setState的更新是同步还是异步的？
+### 调用 setState 之后发生了什么？
+1. React 会将传入的参数对象与组件当前的状态合并产生了新的state
+
+2. 生成新的虚拟DOM树  ==> render()
+
+3. 计算出新树与老树的节点差异，然后做真实DOM的差异更新
+
+### react 的useState 钩子，底层是怎么实现
+用于定义组件的 State，对标到类组件中this.state的功能
+
+```
+function render() {
+  ReactDOM.render(<App />, document.getElementById("root"));
+}
+
+let state;
+
+function useState(initialState){
+  state = state || initialState;
+
+  function setState(newState) {
+    state = newState;
+    render();
+  }
+
+  return [state, setState];
+}
+
+render(); // 首次渲染
+```
+
+### React componentWillMount 做 setState 会干嘛
+componentWillMount中若使用setState，其state会被合并到初始数据当中。
+
+## 说一下你了解的React状态管理库以及原理和应用场景？
+在学习 Redux 之前需要先理解其大致工作流程，一般来说是这样的：
+
+1. 用户在页面上进行某些操作，通过 dispatch 发送一个 action。
+
+1. Redux 接收到这个 action 后通过 reducer 函数获取到下一个状态。
+
+1. 将新状态更新进 store，store 更新后通知页面进行重新渲染。
+
+### 三大原则
+- 单一数据源
+在 Redux 中，所有的状态都放到一个 store 里面，一个应用中一般只有一个 store。
+
+- State 是只读的
+在 Redux 中，唯一改变 state 的方法是通过 dispatch 触发 action，action 描述了这次修改行为的相关信息。只允许通过 action 修改可以避免一些 mutable 的操作，保证状态不会被随意修改
+
+- 通过纯函数来修改
+为了描述 action 使状态如何修改，需要你编写 reducer 函数来修改状态。reducer 函数接收前一次的 state 和 action，返回新的 state。无论被调用多少次，只要传入相同的 `state 和 action，那么就一定返回同样的结果。
+
+这三个原则使得 Redux 状态是可预测的，很容易实现时间旅行，但也带来了一些弊端，那就是上手难度比较高，模板代码太多，需要了解 `action、reducer、middleware 等概念。
+
+[React状态](https://github.com/yinguangyao/blog/issues/56)
 
 ## 如何避免React应用出现白屏？如何更优雅的处理异常？
 部分 UI 的 JavaScript 错误不应该导致整个应用崩溃，为了解决这个问题，React 16 引入了一个新的概念 —— 错误边界(Error Boundaries)。

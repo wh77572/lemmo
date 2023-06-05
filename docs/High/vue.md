@@ -301,8 +301,10 @@ component2.data.b // 5
 - provide / inject 适用于 隔代组件通信
 - Vuex 适用于 父子、隔代、兄弟组件通信
 
-## Vue中$set()的作用
+## Vue中$set()的作用以及实现原理
 给对象添加新的属性。如果视图不能更新的话用$set可以进行视图更新。只所以用$set 是因为Vue无法监听普通的新增属性的变化。
+
+[Vue.set()和this.$set()的区别](https://www.cnblogs.com/heavenYJJ/p/9559439.html)
 
 ## vue-router有哪几种导航钩子（ 导航守卫 ）？
 1. 全局守卫： router.beforeEach
