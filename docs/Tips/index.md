@@ -1,7 +1,7 @@
 ---
 nav:
   title: Tips
-  order: 5
+  order: 3
 ---
 
 前端工具 && 前端tips

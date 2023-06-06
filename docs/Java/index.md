@@ -1,7 +1,7 @@
 ---
 nav:
   title: Java
-  order: 16
+  order: 10
 ---
 
 ## java

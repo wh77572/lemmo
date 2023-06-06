@@ -1,7 +1,7 @@
 ---
 nav:
   title: 高频
-  order: 0
+  order: 1
 title: time
 order: 1
 ---

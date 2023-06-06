@@ -1,7 +1,7 @@
 ---
 nav:
   title: Js
-  order: 1
+  order: 2
 title: 介绍
 order: 1
 ---

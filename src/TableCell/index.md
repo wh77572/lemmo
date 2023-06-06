@@ -1,7 +1,7 @@
 ---
 nav:
   title: Component
-  order: 10
+  order: 3
 ---
 
 ## Table
