@@ -9,6 +9,8 @@ order: 1
 ## 怎么搭建一个go项目
 零基础通过开发Web服务学习Go语言
 
+除却脚手架之外怎么搭建一个最简单的go框架，以便于了解基础，后面用脚手架一键生成。
+
 ## 配置环境
 ## 下载 [官网地址](golang.org/dl/)
 
@@ -198,12 +200,111 @@ func main() {
 #### 在根目录下使用 go run main.go 启动服务
 这时候我们在浏览器中访问localhost:8080 或者 127.0.0.1:8080 就可以看到服务启动成功了
 
-## 怎么连接数据库
+## 怎么连接可视化工具Navicat(这里使用MySQL，主要为了事务)
 
-### 使用可视化数据库Navicat
+### Go原生就支持连接数据库，所以在使用 `Golang` 开发时，当需要数据库交互时，即可使用`database/sql`包。
+```
+import (
+    "database/sql"
+)
+```
+
+### Go不提供具体的数据库驱动，所以使用`database/sql`包时必须注入（至少）一个数据库驱动。
+```
+import (
+	"database/sql"
+	_ "github.com/go-sql-driver/mysql"
+)
+```
+
+### Go连接MYSQL数据库
+1. 下载依赖
+```
+go get -u github.com/go-sql-driver/mysql
+```
+
+2. 使用MySQL驱动
+```
+func Open(driverName, dataSourceName string) (*DB, error)
+```
+Open打开一个dirverName指定的数据库，dataSourceName指定数据源，一般至少包括数据库文件名和其它连接必要的信息。
+
+```
+import (
+	"database/sql"
+	_ "github.com/go-sql-driver/mysql"
+)
+
+func main() {
+   // DSN:Data Source Name
+	dsn := "user:password@tcp(127.0.0.1:3306)/dbname"
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		panic(err)
+	}
+
+	defer db.Close()  // 注意这行代码要写在上面err判断的下面
+}
+```
+
+<font color=red>思考题</font>： 为什么上面代码中的`defer db.Close()`语句不应该写在`if err != nil`的前面呢？
+
+3. 初始化连接
+
+Open函数可能只是验证其参数格式是否正确，实际上并不创建与数据库的连接。如果要检查数据源的名称是否真实有效，应该调用Ping方法。
+
+返回的DB对象可以安全地被多个goroutine并发使用，并且维护其自己的空闲连接池。因此，Open函数应该仅被调用一次，很少需要关闭这个DB对象。
+
+接下来，我们定义一个全局变量db，用来保存数据库连接对象。将上面的示例代码拆分出一个独立的initDB函数，只需要在程序启动时调用一次该函数完成全局变量db的初始化，其他函数中就可以直接使用全局变量db了。
+
+```
+// 定义一个全局对象db
+var db *sql.DB
+
+// 定义一个初始化数据库的函数
+func initDB() (err error) {
+	// DSN:Data Source Name
+	dsn := "user:password@tcp(127.0.0.1:3306)/sql_test?charset=utf8mb4&parseTime=True"
+	// 不会校验账号密码是否正确
+	// 注意！！！这里不要使用:=，我们是给全局变量赋值，然后在main函数中使用全局变量db
+	db, err = sql.Open("mysql", dsn)
+	if err != nil {
+		return err
+	}
+	// 尝试与数据库建立连接（校验dsn是否正确）
+	err = db.Ping()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func main() {
+	err := initDB() // 调用输出化数据库的函数
+	if err != nil {
+		fmt.Printf("init db failed,err:%v\n", err)
+		return
+	}
+}
+```
+其中sql.DB是表示连接的数据库对象（结构体实例），它保存了连接数据库相关的所有信息。它内部维护着一个具有零到多个底层连接的连接池，它可以安全地被多个goroutine同时使用。
+
+4. SetConnMaxLifetime (最大连接数), SetMaxIdleConns (最大闲置连接数)
+```
+func (db *DB) SetMaxIdleConns(n int)
+```
+`SetMaxIdleConns`设置连接池中的最大闲置连接数。 如果n大于最大开启连接数，则新的最大闲置连接数会减小到匹配最大开启连接数的限制。 如果n<=0，不会保留闲置连接。
+
+```
+//设置数据库最大连接数
+db.SetConnMaxLifetime(10)
+
+//设置上数据库最大闲置连接数
+db.SetMaxIdleConns(5)
+```
+
+## CRUD
 
 ## 提供接口
-
-## 实现增删改
 
 ## 跟前端联调
